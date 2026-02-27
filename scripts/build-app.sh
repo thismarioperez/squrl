@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# build-app.sh — packages the binary into a macOS .app bundle.
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(dirname "$SCRIPT_DIR")"
+APP_NAME="Squrl"
+APP_DIR="$REPO_ROOT/$APP_NAME.app"
+BINARY_NAME="squrl"
+
+echo "Building $APP_NAME.app..."
+
+# 1. Build the binary.
+cd "$REPO_ROOT"
+CGO_ENABLED=1 go build -o "bin/$BINARY_NAME" ./cmd/squrl/
+
+# 2. Create bundle structure.
+mkdir -p "$APP_DIR/Contents/MacOS"
+mkdir -p "$APP_DIR/Contents/Resources"
+
+# 3. Copy binary and plist.
+cp "bin/$BINARY_NAME" "$APP_DIR/Contents/MacOS/$BINARY_NAME"
+cp "$REPO_ROOT/Info.plist" "$APP_DIR/Contents/Info.plist"
+
+echo "Done: $APP_DIR"
+echo ""
+echo "Launch with:"
+echo "  open \"$APP_DIR\""
+echo ""
+echo "NOTE: On first launch macOS will prompt for Screen Recording permission."
+echo "      Grant it in System Settings → Privacy & Security → Screen Recording."

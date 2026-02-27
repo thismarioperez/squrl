@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleExecutable</key>
+    <string>squrl</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.mario.squrl</string>
+    <key>CFBundleName</key>
+    <string>Squrl</string>
+    <key>CFBundleVersion</key>
+    <string>1.0.0</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0.0</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <!-- Hide from the Dock — menu bar only app -->
+    <key>LSUIElement</key>
+    <true/>
+    <!-- Retina / high-DPI support -->
+    <key>NSHighResolutionCapable</key>
+    <true/>
+    <!-- Screen Recording permission usage description (shown in System Settings) -->
+    <key>NSScreenCaptureUsageDescription</key>
+    <string>Squrl needs Screen Recording access to capture the screen and detect QR codes.</string>
+</dict>
+</plist>

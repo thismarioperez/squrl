@@ -1,0 +1,31 @@
+# Build artifacts
+bin/
+*.app
+
+# Go
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+__MACOSX/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# mise local overrides
+.mise.local.toml
+
+# Claude Code session data
+.claude/

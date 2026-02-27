@@ -1,0 +1,29 @@
+[tools]
+go = "1.26"
+
+[env]
+CGO_ENABLED = "1"
+
+[tasks.build]
+description = "Build the binary to bin/squrl"
+run = "go build -o bin/squrl ./cmd/squrl/"
+
+[tasks.bundle]
+description = "Build the macOS .app bundle (Squrl.app) — macOS only"
+run = "scripts/build-app.sh"
+
+[tasks.run]
+description = "Run the app directly (development)"
+run = "go run ./cmd/squrl/"
+
+[tasks.test]
+description = "Run all tests"
+run = "go test ./..."
+
+[tasks.tidy]
+description = "Tidy go modules"
+run = "go mod tidy"
+
+[tasks.clean]
+description = "Remove build artefacts"
+run = "rm -rf bin/ 'Squrl.app'"
