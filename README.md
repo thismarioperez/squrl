@@ -1,6 +1,8 @@
 # Squrl
 
-> DISCLAIMER: This is a heavily vibe-coded project created out of necessity.
+![Squrl icon](assets/icon.svg)
+
+> DISCLAIMER: This is a heavily vibe-coded project created out of curiosity and necessity.
 
 A cross-platform system tray utility that scans all connected displays for visible QR codes and copies their content to your clipboard.
 
@@ -11,6 +13,49 @@ A cross-platform system tray utility that scans all connected displays for visib
 - Decodes multiple QR codes per screen
 - Click any result to copy it to the clipboard
 - Desktop notifications on scan completion
+
+## Download
+
+Pre-built binaries are available on the [Releases](https://github.com/thismarioperez/squrl/releases) page.
+
+### macOS (Apple Silicon)
+
+1. Download `squrl-<version>-darwin-arm64.tar.gz` from the release assets.
+
+2. Extract the archive:
+
+   ```sh
+   tar -xzf squrl-<version>-darwin-arm64.tar.gz
+   ```
+
+3. Move the app to your Applications folder (optional but recommended):
+
+   ```sh
+   mv Squrl.app /Applications/
+   ```
+
+4. **Remove the macOS quarantine flag.**
+   Because the app is not notarized, Gatekeeper will block it from opening. Run:
+
+   ```sh
+   xattr -dr com.apple.quarantine /Applications/Squrl.app
+   ```
+
+   Replace `/Applications/Squrl.app` with wherever you placed the bundle if you skipped step 3.
+
+5. Open the app:
+
+   ```sh
+   open /Applications/Squrl.app
+   ```
+
+   On first launch, macOS will prompt you to grant **Screen Recording** permission. Approve it in:
+
+   > System Settings → Privacy & Security → Screen Recording
+
+   Then click the QR icon in the menu bar and select **Scan Screen**.
+
+---
 
 ## Requirements
 
@@ -103,9 +148,14 @@ macOS 10.15+ requires explicit Screen Recording permission for any app that capt
 
 To revoke or re-grant permission: **System Settings → Privacy & Security → Screen Recording**.
 
-## App Icon (macOS)
+## Icons
 
-The macOS `.app` bundle icon is generated from `assets/icon.svg` using `rsvg-convert` (from [librsvg](https://wiki.gnome.org/Projects/LibRsvg)) and the built-in `iconutil`.
+Icons are generated from SVG sources using `rsvg-convert` (from [librsvg](https://wiki.gnome.org/Projects/LibRsvg)) and the built-in `iconutil`.
+
+| Source | Output | Purpose |
+| --- | --- | --- |
+| `assets/icon.svg` | `assets/AppIcon.icns` | macOS `.app` bundle icon |
+| `assets/menubar.svg` | `assets/menubar_22.png`, `assets/menubar_44.png` | Menu bar template icon (1x and 2x/Retina) |
 
 Install the dependency if you don't have it:
 
@@ -113,13 +163,13 @@ Install the dependency if you don't have it:
 brew install librsvg
 ```
 
-Regenerate `assets/AppIcon.icns` after any change to the SVG:
+Regenerate all icon assets after any change to either SVG:
 
 ```sh
 bash scripts/make-icns.sh
 ```
 
-The `.icns` is committed to the repository so a rebuild is only needed when the icon changes.
+The generated files are committed to the repository so a rebuild is only needed when an icon changes.
 
 ## Project Structure
 
@@ -131,15 +181,23 @@ squrl/
 │   │   ├── notify_darwin.go      # macOS notifications (osascript)
 │   │   ├── notify_linux.go       # Linux notifications (notify-send)
 │   │   └── notify_windows.go     # Windows notifications (stub)
-│   ├── scanner/scanner.go        # Screen capture + QR decoding
-│   └── tray/tray.go              # System tray UI
+│   ├── scanner/
+│   │   ├── scanner.go            # Screen capture + QR decoding
+│   │   └── scanner_test.go
+│   └── tray/
+│       ├── tray.go               # System tray UI
+│       └── tray_test.go
 ├── assets/
-│   ├── icon.go                   # Programmatic menu bar icon (QR symbol)
-│   ├── icon.svg                  # App icon source (squirrel)
+│   ├── icon.go                   # Embeds menubar PNG icons
+│   ├── icon.svg                  # App bundle icon source (squirrel)
+│   ├── menubar.svg               # Menu bar icon source
+│   ├── menubar_22.png            # Menu bar icon 1x (generated)
+│   ├── menubar_44.png            # Menu bar icon 2x/Retina (generated)
 │   └── AppIcon.icns              # Generated macOS bundle icon
 ├── scripts/
 │   ├── build-app.sh              # macOS .app bundle build script
-│   └── make-icns.sh              # SVG → .icns conversion script
+│   ├── make-icns.sh              # SVG → .icns + menubar PNGs
+│   └── release.sh                # Release build script
 ├── Info.plist                    # macOS app bundle metadata
 ├── mise.toml                     # Tooling + task definitions
 ├── go.mod
