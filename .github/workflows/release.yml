@@ -52,7 +52,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             libgtk-3-dev \
-            libappindicator3-dev \
+            libayatana-appindicator3-dev \
+            libayatana-indicator3-dev \
+            libayatana-ido3-0.4-dev \
             libx11-dev
 
       - name: Build binary
