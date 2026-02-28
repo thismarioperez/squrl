@@ -12,7 +12,8 @@ echo "Building $APP_NAME.app..."
 
 # 1. Build the binary.
 cd "$REPO_ROOT"
-CGO_ENABLED=1 go build -o "bin/$BINARY_NAME" ./cmd/squrl/
+LDFLAGS="${LDFLAGS:--X main.version=dev}"
+CGO_ENABLED=1 go build -ldflags "$LDFLAGS" -o "bin/$BINARY_NAME" ./cmd/squrl/
 
 # 2. Create bundle structure.
 mkdir -p "$APP_DIR/Contents/MacOS"

@@ -6,7 +6,7 @@ CGO_ENABLED = "1"
 
 [tasks.build]
 description = "Build the binary to bin/squrl"
-run = "go build -o bin/squrl ./cmd/squrl/"
+run = "go build -ldflags \"-X main.version=dev\" -o bin/squrl ./cmd/squrl/"
 
 [tasks.bundle]
 description = "Build the macOS .app bundle (Squrl.app) — macOS only"
