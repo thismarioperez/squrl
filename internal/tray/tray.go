@@ -20,6 +20,7 @@ const maxResults = 20
 var (
 	appVersion   = "dev"
 	scanItem     *systray.MenuItem
+	clearItem    *systray.MenuItem
 	statusItem   *systray.MenuItem
 	resultItems  [maxResults]*systray.MenuItem
 	resultTitles [maxResults]string // full (untruncated) text for each result slot
@@ -41,6 +42,10 @@ func OnReady() {
 	statusItem.Disable()
 	systray.AddSeparator()
 
+	clearItem = systray.AddMenuItem("Clear results", "")
+	clearItem.Hide()
+	systray.AddSeparator()
+
 	// Pre-allocate result item pool (hidden by default).
 	for i := range resultItems {
 		item := systray.AddMenuItem("", "")
@@ -59,6 +64,8 @@ func OnReady() {
 			select {
 			case <-scanItem.ClickedCh:
 				go runScan()
+			case <-clearItem.ClickedCh:
+				clearResults()
 			case <-quitItem.ClickedCh:
 				systray.Quit()
 			}
@@ -128,6 +135,7 @@ func updateResults(results []string) {
 	}
 
 	if len(results) == 0 {
+		clearItem.Hide()
 		statusItem.SetTitle("No QR codes found")
 		notify.ShowNotification("Squrl", "No QR codes found on screen")
 		return
@@ -146,9 +154,25 @@ func updateResults(results []string) {
 		resultItems[i].Show()
 	}
 
+	clearItem.Show()
+
 	summary := fmt.Sprintf("Found %d QR code(s)", len(results))
 	detail := strings.Join(results[:count], "\n")
 	notify.ShowNotification(summary, detail)
+}
+
+// clearResults hides all result slots and resets status.
+func clearResults() {
+	resultMu.Lock()
+	defer resultMu.Unlock()
+
+	for i, item := range resultItems {
+		item.Hide()
+		item.SetTitle("")
+		resultTitles[i] = ""
+	}
+	clearItem.Hide()
+	statusItem.SetTitle("No results yet")
 }
 
 // copyToClipboard writes text to the system clipboard.
