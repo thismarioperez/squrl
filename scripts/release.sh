@@ -39,7 +39,7 @@ fi
 git fetch --tags --quiet
 
 # Latest stable tag (no pre-release suffix).
-latest_stable="$(git tag --list "v*" --sort=-version:refname | grep -v -- '-' | head -n1)"
+latest_stable="$(git tag --list "v*" --sort=-version:refname | { grep -v -- '-' || true; } | head -n1)"
 latest_stable="${latest_stable:-v0.0.0}"
 
 # Latest tag overall (may be a pre-release).
@@ -53,9 +53,9 @@ case "$1" in
         version="${latest_stable#v}"
         IFS='.' read -r major minor patch_num <<< "$version"
         case "$1" in
-            major) ((major++)); minor=0; patch_num=0 ;;
-            minor) ((minor++));           patch_num=0 ;;
-            patch) ((patch_num++))                    ;;
+            major) major=$((major + 1)); minor=0; patch_num=0 ;;
+            minor) minor=$((minor + 1));           patch_num=0 ;;
+            patch) patch_num=$((patch_num + 1))               ;;
         esac
         new_version="v${major}.${minor}.${patch_num}"
         ;;
@@ -70,7 +70,7 @@ case "$1" in
             pre_num="${BASH_REMATCH[5]}"
             if [[ "$existing_type" == "$pre_type" ]]; then
                 # Same type: increment the pre-release number.
-                ((pre_num++))
+                pre_num=$((pre_num + 1))
             else
                 # Different type (e.g. beta → rc): same base, reset to 1.
                 pre_num=1
@@ -80,7 +80,7 @@ case "$1" in
             # Latest is stable: start a new pre-release series off the next minor.
             version="${latest_stable#v}"
             IFS='.' read -r major minor patch_num <<< "$version"
-            ((minor++)); patch_num=0
+            minor=$((minor + 1)); patch_num=0
             new_version="v${major}.${minor}.${patch_num}-${pre_type}.1"
         fi
         ;;
