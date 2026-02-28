@@ -121,9 +121,14 @@ jobs:
 
       - name: Create GitHub Release
         run: |
+          prerelease_flag=""
+          if [[ "${{ github.ref_name }}" == *"-"* ]]; then
+            prerelease_flag="--prerelease"
+          fi
           gh release create "${{ github.ref_name }}" \
             --title "Squrl ${{ github.ref_name }}" \
             --generate-notes \
+            $prerelease_flag \
             dist/*
         env:
           GH_TOKEN: ${{ github.token }}
