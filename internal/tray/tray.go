@@ -18,6 +18,7 @@ import (
 const maxResults = 20
 
 var (
+	appVersion   = "dev"
 	scanItem     *systray.MenuItem
 	statusItem   *systray.MenuItem
 	resultItems  [maxResults]*systray.MenuItem
@@ -25,6 +26,9 @@ var (
 	resultMu     sync.Mutex
 	scanning     bool
 )
+
+// SetVersion stores the application version to be displayed in the tray menu.
+func SetVersion(v string) { appVersion = v }
 
 // OnReady is called by systray once the tray icon is ready. Runs in a goroutine.
 func OnReady() {
@@ -45,6 +49,8 @@ func OnReady() {
 	}
 
 	systray.AddSeparator()
+	versionItem := systray.AddMenuItem(fmt.Sprintf("Version %s", appVersion), "")
+	versionItem.Disable()
 	quitItem := systray.AddMenuItem("Quit", "Exit Squrl")
 
 	// Event loop.
