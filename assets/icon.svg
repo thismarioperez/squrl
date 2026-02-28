@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 512 512"
+   width="512"
+   height="512"
+   version="1.1"
+   id="svg26"
+   sodipodi:docname="squirrel-icon-v7.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.0dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs26" />
+  <sodipodi:namedview
+     id="namedview26"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="1.1566763"
+     inkscape:cx="210.51697"
+     inkscape:cy="223.05289"
+     inkscape:window-width="1728"
+     inkscape:window-height="1055"
+     inkscape:window-x="0"
+     inkscape:window-y="34"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg26" />
+  <!-- Background -->
+  <rect
+     width="512"
+     height="512"
+     rx="112"
+     ry="112"
+     fill="#1C1917"
+     id="rect1" />
+  <!-- TAIL -->
+  <path
+     d="M 270 390            C 270 390, 160 375, 132 268            C 106 162, 205 95, 288 118            C 348 135, 375 185, 352 248            C 330 308, 290 318, 288 368            L 270 390 Z"
+     fill="#B85C2A"
+     id="path1" />
+  <!-- BODY â rounded rect -->
+  <rect
+     x="190"
+     y="295"
+     width="130"
+     height="105"
+     rx="30"
+     fill="#D97B4F"
+     id="rect2" />
+  <!-- Belly â squarish rounded rect -->
+  <rect
+     x="211"
+     y="305"
+     width="88"
+     height="88"
+     rx="14"
+     fill="#f0c49a"
+     id="rect3" />
+  <!-- QR CODE SYMBOL on belly -->
+  <g
+     id="g30"
+     transform="translate(-2)">
+    <g
+       id="g29">
+      <rect
+         x="222"
+         y="319.40036"
+         width="24"
+         height="24"
+         rx="4"
+         fill="#c96b3a"
+         id="rect4" />
+      <rect
+         x="226"
+         y="323.40036"
+         width="16"
+         height="16"
+         rx="2"
+         fill="#f0c49a"
+         id="rect5" />
+      <rect
+         x="230"
+         y="327.40036"
+         width="8"
+         height="8"
+         rx="1"
+         fill="#c96b3a"
+         id="rect6" />
+    </g>
+    <g
+       id="g28">
+      <rect
+         x="268"
+         y="319.40036"
+         width="24"
+         height="24"
+         rx="4"
+         fill="#c96b3a"
+         id="rect7" />
+      <rect
+         x="272"
+         y="323.40036"
+         width="16"
+         height="16"
+         rx="2"
+         fill="#f0c49a"
+         id="rect8" />
+      <rect
+         x="276"
+         y="327.40036"
+         width="8"
+         height="8"
+         rx="1"
+         fill="#c96b3a"
+         id="rect9" />
+    </g>
+    <g
+       id="g27">
+      <rect
+         x="222"
+         y="360.40036"
+         width="24"
+         height="24"
+         rx="4"
+         fill="#c96b3a"
+         id="rect10" />
+      <rect
+         x="226"
+         y="364.40036"
+         width="16"
+         height="16"
+         rx="2"
+         fill="#f0c49a"
+         id="rect11" />
+      <rect
+         x="230"
+         y="368.40036"
+         width="8"
+         height="8"
+         rx="1"
+         fill="#c96b3a"
+         id="rect12" />
+    </g>
+    <g
+       id="g26"
+       transform="translate(3,3)">
+      <rect
+         x="268"
+         y="360.40036"
+         width="7"
+         height="7"
+         rx="1.5"
+         fill="#c96b3a"
+         id="rect13" />
+      <rect
+         x="279"
+         y="360.40036"
+         width="7"
+         height="7"
+         rx="1.5"
+         fill="#c96b3a"
+         id="rect14" />
+      <rect
+         x="268"
+         y="371.40036"
+         width="7"
+         height="7"
+         rx="1.5"
+         fill="#c96b3a"
+         id="rect15" />
+      <rect
+         x="279"
+         y="371.40036"
+         width="7"
+         height="7"
+         rx="1.5"
+         fill="#c96b3a"
+         id="rect16" />
+    </g>
+  </g>
+  <!-- HEAD â circle -->
+  <circle
+     cx="255"
+     cy="245"
+     r="72"
+     fill="#D97B4F"
+     id="circle21" />
+  <!-- Muzzle -->
+  <!-- Buck teeth â two rectangles poking down from muzzle -->
+  <!-- Gap line between teeth -->
+  <!-- Left ear -->
+  <g
+     id="g32">
+    <g
+       id="g31"
+       transform="translate(0.06947327)">
+      <rect
+         x="242"
+         y="292"
+         width="13"
+         height="17"
+         rx="4"
+         fill="#ffffff"
+         id="rect22" />
+      <rect
+         x="254.86105"
+         y="292"
+         width="13"
+         height="17"
+         rx="4"
+         fill="#ffffff"
+         id="rect23" />
+    </g>
+    <ellipse
+       cx="255"
+       cy="272"
+       rx="32"
+       ry="24"
+       fill="#F0C49A"
+       id="ellipse21" />
+  </g>
+  <polygon
+     points="215,145 240,192 198,192 "
+     fill="#d97b4f"
+     id="polygon24"
+     transform="rotate(-11.227978,219,168.5)" />
+  <!-- Right ear -->
+  <polygon
+     points="295,145 314,192 270,192 "
+     fill="#d97b4f"
+     id="polygon25"
+     transform="rotate(13.271296,292,168.5)" />
+  <!-- Eyes -->
+  <g
+     id="g33">
+    <circle
+       cx="233"
+       cy="238"
+       r="7"
+       fill="#1C1917"
+       id="circle25" />
+    <circle
+       cx="277"
+       cy="238"
+       r="7"
+       fill="#1C1917"
+       id="circle26" />
+  </g>
+</svg>

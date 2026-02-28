@@ -103,6 +103,24 @@ macOS 10.15+ requires explicit Screen Recording permission for any app that capt
 
 To revoke or re-grant permission: **System Settings → Privacy & Security → Screen Recording**.
 
+## App Icon (macOS)
+
+The macOS `.app` bundle icon is generated from `assets/icon.svg` using `rsvg-convert` (from [librsvg](https://wiki.gnome.org/Projects/LibRsvg)) and the built-in `iconutil`.
+
+Install the dependency if you don't have it:
+
+```sh
+brew install librsvg
+```
+
+Regenerate `assets/AppIcon.icns` after any change to the SVG:
+
+```sh
+bash scripts/make-icns.sh
+```
+
+The `.icns` is committed to the repository so a rebuild is only needed when the icon changes.
+
 ## Project Structure
 
 ```
@@ -115,8 +133,13 @@ squrl/
 │   │   └── notify_windows.go     # Windows notifications (stub)
 │   ├── scanner/scanner.go        # Screen capture + QR decoding
 │   └── tray/tray.go              # System tray UI
-├── assets/icon.go                # Programmatic tray icon
-├── scripts/build-app.sh          # macOS .app bundle build script
+├── assets/
+│   ├── icon.go                   # Programmatic menu bar icon (QR symbol)
+│   ├── icon.svg                  # App icon source (squirrel)
+│   └── AppIcon.icns              # Generated macOS bundle icon
+├── scripts/
+│   ├── build-app.sh              # macOS .app bundle build script
+│   └── make-icns.sh              # SVG → .icns conversion script
 ├── Info.plist                    # macOS app bundle metadata
 ├── mise.toml                     # Tooling + task definitions
 ├── go.mod

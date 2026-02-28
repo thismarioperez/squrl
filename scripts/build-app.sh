@@ -18,9 +18,12 @@ CGO_ENABLED=1 go build -o "bin/$BINARY_NAME" ./cmd/squrl/
 mkdir -p "$APP_DIR/Contents/MacOS"
 mkdir -p "$APP_DIR/Contents/Resources"
 
-# 3. Copy binary and plist.
+# 3. Copy binary, plist, and icon.
 cp "bin/$BINARY_NAME" "$APP_DIR/Contents/MacOS/$BINARY_NAME"
 cp "$REPO_ROOT/Info.plist" "$APP_DIR/Contents/Info.plist"
+if [ -f "$REPO_ROOT/assets/AppIcon.icns" ]; then
+    cp "$REPO_ROOT/assets/AppIcon.icns" "$APP_DIR/Contents/Resources/AppIcon.icns"
+fi
 
 echo "Done: $APP_DIR"
 echo ""
