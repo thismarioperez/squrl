@@ -5,6 +5,9 @@ import (
 	"github.com/thismarioperez/squrl/internal/tray"
 )
 
+// version is set at build time via -ldflags "-X main.version=vX.Y.Z".
+var version = "dev"
+
 func main() {
 	// systray.Run must be called from main() on macOS — it takes ownership of the
 	// Cocoa main thread and runs the AppKit event loop until Quit is triggered.
