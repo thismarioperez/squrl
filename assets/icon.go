@@ -15,11 +15,17 @@ var menubarIcon []byte
 //go:embed menubar_44.png
 var menubarIcon2x []byte
 
+//go:embed notification_64.png
+var notificationIcon []byte
+
 // Icon returns the 22×22 menu bar template icon PNG (1x).
 func Icon() []byte { return menubarIcon }
 
 // Icon2x returns the 44×44 menu bar template icon PNG (2x / Retina).
 func Icon2x() []byte { return menubarIcon2x }
+
+// NotificationIcon returns the 64×64 app icon PNG for use in desktop notifications.
+func NotificationIcon() []byte { return notificationIcon }
 
 var (
 	lightOnce   sync.Once

@@ -12,7 +12,7 @@ A cross-platform system tray utility that scans all connected displays for visib
 - Scans all connected displays simultaneously
 - Decodes multiple QR codes per screen
 - Click any result to copy it to the clipboard
-- Desktop notifications on scan completion
+- Desktop notifications on scan completion (with click-to-focus on macOS when [alerter](https://github.com/vjeantet/alerter) is installed)
 
 ## Download
 
@@ -68,6 +68,16 @@ Pre-built binaries are available on the [Releases](https://github.com/thismariop
 
 - macOS 10.15 Catalina or later (macOS 15 Sequoia supported)
 - Xcode Command Line Tools: `xcode-select --install`
+- [alerter v26.5](https://github.com/vjeantet/alerter/releases/tag/v26.5) _(optional)_ — enables click-to-focus on desktop notifications. Install the pinned version to match CI:
+
+  ```sh
+  curl -fsSL https://github.com/vjeantet/alerter/releases/download/v26.5/alerter-26.5.zip -o /tmp/alerter.zip
+  echo "11f63cddc9bb3f8554ed9b762632a120cfa7bee05e3c09d65734823e09d24f10  /tmp/alerter.zip" | shasum -a 256 --check
+  unzip -q /tmp/alerter.zip -d /tmp/alerter-bin
+  sudo mv /tmp/alerter-bin/alerter /usr/local/bin/alerter
+  ```
+
+  When building a `.app` bundle (`mise run bundle`), alerter is automatically copied into the bundle if found in PATH — no separate install needed on end-user machines. When running the binary directly during development, alerter must be on your PATH for click detection to work.
 
 ### Linux
 
@@ -190,7 +200,7 @@ squrl/
 ├── cmd/squrl/main.go             # Entry point
 ├── internal/
 │   ├── notify/
-│   │   ├── notify_darwin.go      # macOS notifications (osascript)
+│   │   ├── notify_darwin.go      # macOS notifications (alerter with osascript fallback)
 │   │   ├── notify_linux.go       # Linux notifications (notify-send)
 │   │   └── notify_windows.go     # Windows notifications (stub)
 │   ├── scanner/

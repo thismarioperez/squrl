@@ -44,3 +44,8 @@ TRAY_SVG="$REPO_ROOT/assets/menubar.svg"
 rsvg-convert -w 22 -h 22 "$TRAY_SVG" -o "$REPO_ROOT/assets/menubar_22.png"
 rsvg-convert -w 44 -h 44 "$TRAY_SVG" -o "$REPO_ROOT/assets/menubar_44.png"
 echo "Created: assets/menubar_22.png, assets/menubar_44.png"
+
+# Render 64×64 notification icon from notification.svg (used by desktop notifications).
+NOTIF_SVG="$REPO_ROOT/assets/notification.svg"
+rsvg-convert -w 64 -h 64 "$NOTIF_SVG" -o "$REPO_ROOT/assets/notification_64.png"
+echo "Created: assets/notification_64.png"
