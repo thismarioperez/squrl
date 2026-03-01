@@ -66,13 +66,10 @@ func OnReady() {
 
 	scanItem = systray.AddMenuItem("Scan Screen", "Capture all displays and decode QR codes")
 	systray.AddSeparator()
-	statusItem = systray.AddMenuItem("No results yet", "")
-	statusItem.Disable()
-	systray.AddSeparator()
-
 	clearItem = systray.AddMenuItem("Clear results", "")
 	clearItem.Hide()
-	systray.AddSeparator()
+	statusItem = systray.AddMenuItem("No results yet", "")
+	statusItem.Disable()
 
 	// Pre-allocate result item pool (hidden by default).
 	for i := range resultItems {
@@ -155,10 +152,11 @@ func updateResults(results []string) {
 	resultMu.Lock()
 	defer resultMu.Unlock()
 
-	// Hide all slots first.
+	// Hide all slots first. Do NOT call SetTitle here: on Linux the systray
+	// backend's do_add_or_update_menu_item always calls gtk_widget_show(), so
+	// a SetTitle call after Hide would immediately un-hide the item.
 	for i, item := range resultItems {
 		item.Hide()
-		item.SetTitle("")
 		resultTitles[i] = ""
 	}
 
@@ -194,9 +192,12 @@ func clearResults() {
 	resultMu.Lock()
 	defer resultMu.Unlock()
 
+	// Do NOT call SetTitle here: on Linux the systray backend's
+	// do_add_or_update_menu_item always calls gtk_widget_show(), so a SetTitle
+	// call queued after Hide would immediately un-hide the item, leaving
+	// phantom blank entries in the menu.
 	for i, item := range resultItems {
 		item.Hide()
-		item.SetTitle("")
 		resultTitles[i] = ""
 	}
 	clearItem.Hide()
