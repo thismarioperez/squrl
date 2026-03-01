@@ -4,8 +4,13 @@ go = "1.26"
 [env]
 CGO_ENABLED = "1"
 
+[tasks.check-deps]
+description = "Verify required system dependencies are installed (Linux only)"
+run = "scripts/check-deps-linux.sh"
+
 [tasks.build]
 description = "Build the binary to bin/squrl"
+depends = ["check-deps"]
 run = "go build -ldflags \"-X main.version=dev\" -o bin/squrl ./cmd/squrl/"
 
 [tasks.bundle]
@@ -14,6 +19,7 @@ run = "scripts/build-app.sh"
 
 [tasks.run]
 description = "Run the app directly (development)"
+depends = ["check-deps"]
 run = "go run ./cmd/squrl/"
 
 [tasks.test]

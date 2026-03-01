@@ -71,10 +71,22 @@ Pre-built binaries are available on the [Releases](https://github.com/thismariop
 
 ### Linux
 
-- X11 display server
-- GTK3 + libappindicator3 (for the system tray icon)
-- libnotify / `notify-send` (for desktop notifications)
-- `xclip` or `xsel` (for clipboard support)
+The following system packages are required. Run `mise run check-deps` to verify they are present, or `mise run run` / `mise run build` will check automatically.
+
+| Package | apt | Purpose |
+|---------|-----|---------|
+| pkg-config | `pkg-config` | Locates C libraries at compile time |
+| ayatana-appindicator3 | `libayatana-appindicator3-dev` | System tray (compile-time CGO dep) |
+| notify-send | `libnotify-bin` | Desktop notifications (runtime) |
+| xclip or xsel | `xclip` / `xsel` | Clipboard support (runtime) |
+
+Install all at once:
+
+```sh
+sudo apt-get install -y pkg-config libayatana-appindicator3-dev libnotify-bin xclip
+```
+
+An X11 display server is also required (Wayland via XWayland is supported).
 
 ### Windows
 
