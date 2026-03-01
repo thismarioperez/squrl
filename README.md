@@ -134,7 +134,7 @@ Then click the QR icon in the menu bar and select **Scan Screen**.
 ### Option B — Run directly (all platforms / development)
 
 ```sh
-mise run run
+mise run start
 ```
 
 On macOS, when running outside of a `.app` bundle, the Screen Recording permission may be attached to **Terminal** (or your IDE) instead of the app itself.
@@ -147,7 +147,7 @@ All tasks are defined in `mise.toml` and run via `mise run <task>`.
 | ----------------- | -------------------------------- |
 | `mise run build`  | Compile binary to `bin/squrl`    |
 | `mise run bundle` | Build `Squrl.app` bundle (macOS) |
-| `mise run run`    | Run directly without bundling    |
+| `mise run start`  | Run directly without bundling    |
 | `mise run test`   | Run all tests                    |
 | `mise run tidy`   | Tidy Go module dependencies      |
 | `mise run clean`  | Remove `bin/` and `Squrl.app`    |
