@@ -113,7 +113,7 @@ func OnReady() {
 				resultMu.Unlock()
 				if title != "" {
 					copyToClipboard(title)
-					notify.ShowNotification("Copied to clipboard", title, nil)
+					notify.ShowNotification("Copied to clipboard", title, openMenu)
 				}
 			}
 		}()
@@ -146,7 +146,7 @@ func runScan() {
 
 	if err != nil {
 		statusItem.SetTitle(fmt.Sprintf("Error: %v", err))
-		notify.ShowNotification("Scan failed", err.Error(), nil)
+		notify.ShowNotification("Scan failed", err.Error(), openMenu)
 		return
 	}
 
@@ -169,7 +169,7 @@ func updateResults(results []string) {
 	if len(results) == 0 {
 		clearItem.Hide()
 		statusItem.SetTitle("No QR codes found")
-		notify.ShowNotification("Squrl", "No QR codes found on screen", nil)
+		notify.ShowNotification("Squrl", "No QR codes found on screen", openMenu)
 		return
 	}
 

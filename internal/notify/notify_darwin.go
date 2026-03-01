@@ -36,15 +36,15 @@ func lookupAlerter() string {
 	return alerterPath
 }
 
-// ShowNotification displays a macOS notification. When onActivate is non-nil and
-// alerter is installed, the callback is invoked if the user clicks the notification body.
+// ShowNotification displays a macOS notification. Uses alerter when available so
+// the callback is invoked if the user clicks the notification body.
 // Falls back to osascript (no click detection) when alerter is unavailable.
 func ShowNotification(title, message string, onActivate func()) {
 	if len(message) > 200 {
 		message = message[:197] + "..."
 	}
 
-	if p := lookupAlerter(); p != "" && onActivate != nil {
+	if p := lookupAlerter(); p != "" {
 		go func() {
 			iconPath, cleanup := writeIconTemp()
 			defer cleanup()
@@ -58,7 +58,7 @@ func ShowNotification(title, message string, onActivate func()) {
 				args = append(args, "--app-icon", iconPath)
 			}
 			out, err := exec.Command(p, args...).Output()
-			if err == nil && strings.TrimSpace(string(out)) == "@CONTENTCLICKED" {
+			if err == nil && strings.TrimSpace(string(out)) == "@CONTENTCLICKED" && onActivate != nil {
 				onActivate()
 			}
 		}()
