@@ -52,6 +52,12 @@ func setTrayIcon() {
 // isLinuxDarkMode returns true when the menubar background is likely dark.
 func isLinuxDarkMode() bool {
 	out, err := exec.Command("gsettings", "get", "org.gnome.desktop.interface", "color-scheme").Output()
+	return parseDarkMode(out, err)
+}
+
+// parseDarkMode interprets gsettings output to determine if dark mode is active.
+// Returns true (dark) when err is non-nil or the output does not contain "prefer-light".
+func parseDarkMode(out []byte, err error) bool {
 	if err != nil {
 		// gsettings unavailable; assume dark (most Linux panels are dark by default).
 		return true
