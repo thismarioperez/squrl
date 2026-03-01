@@ -2,6 +2,8 @@ package tray
 
 import (
 	"fmt"
+	"os/exec"
+	"runtime"
 	"strings"
 	"sync"
 
@@ -31,9 +33,35 @@ var (
 // SetVersion stores the application version to be displayed in the tray menu.
 func SetVersion(v string) { appVersion = v }
 
+// setTrayIcon sets the tray icon, accounting for the menubar background color on Linux.
+// On macOS, SetTemplateIcon lets the OS automatically adapt the icon for light/dark mode.
+// On Linux, template icon rendering is not supported, so we detect the desktop color
+// scheme and supply a pre-colorized icon directly.
+func setTrayIcon() {
+	if runtime.GOOS == "linux" {
+		if isLinuxDarkMode() {
+			systray.SetIcon(assets.IconLight())
+		} else {
+			systray.SetIcon(assets.Icon())
+		}
+	} else {
+		systray.SetTemplateIcon(assets.Icon(), assets.Icon())
+	}
+}
+
+// isLinuxDarkMode returns true when the menubar background is likely dark.
+func isLinuxDarkMode() bool {
+	out, err := exec.Command("gsettings", "get", "org.gnome.desktop.interface", "color-scheme").Output()
+	if err != nil {
+		// gsettings unavailable; assume dark (most Linux panels are dark by default).
+		return true
+	}
+	return !strings.Contains(strings.ToLower(string(out)), "prefer-light")
+}
+
 // OnReady is called by systray once the tray icon is ready. Runs in a goroutine.
 func OnReady() {
-	systray.SetTemplateIcon(assets.Icon(), assets.Icon())
+	setTrayIcon()
 	systray.SetTooltip("Squrl — click to scan")
 
 	scanItem = systray.AddMenuItem("Scan Screen", "Capture all displays and decode QR codes")
