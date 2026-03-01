@@ -17,7 +17,7 @@ run = "go build -ldflags \"-X main.version=dev\" -o bin/squrl ./cmd/squrl/"
 description = "Build the macOS .app bundle (Squrl.app) — macOS only"
 run = "scripts/build-app.sh"
 
-[tasks.run]
+[tasks.start]
 description = "Run the app directly (development)"
 depends = ["check-deps"]
 run = "go run ./cmd/squrl/"
