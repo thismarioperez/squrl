@@ -6,17 +6,49 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
+	"sync"
 )
 
-// ShowNotification displays a macOS notification via osascript.
-func ShowNotification(title, message string) {
-	// Escape double-quotes to prevent osascript injection.
+var (
+	alerterPath     string
+	alerterPathOnce sync.Once
+)
+
+func lookupAlerter() string {
+	alerterPathOnce.Do(func() {
+		p, err := exec.LookPath("alerter")
+		if err == nil {
+			alerterPath = p
+		}
+	})
+	return alerterPath
+}
+
+// ShowNotification displays a macOS notification. When onActivate is non-nil and
+// alerter is installed, the callback is invoked if the user clicks the notification body.
+// Falls back to osascript (no click detection) when alerter is unavailable.
+func ShowNotification(title, message string, onActivate func()) {
+	if len(message) > 200 {
+		message = message[:197] + "..."
+	}
+
+	if p := lookupAlerter(); p != "" && onActivate != nil {
+		go func() {
+			out, err := exec.Command(p,
+				"--title", title,
+				"--message", message,
+				"--group", "com.mario.squrl",
+			).Output()
+			if err == nil && strings.TrimSpace(string(out)) == "@CONTENTCLICKED" {
+				onActivate()
+			}
+		}()
+		return
+	}
+
+	// Fallback: osascript (no click detection).
 	safeTitle := strings.ReplaceAll(title, `"`, `'`)
 	safeMsg := strings.ReplaceAll(message, `"`, `'`)
-	// Truncate long messages for the notification banner.
-	if len(safeMsg) > 200 {
-		safeMsg = safeMsg[:197] + "..."
-	}
 	script := fmt.Sprintf(`display notification %q with title %q`, safeMsg, safeTitle)
 	_ = exec.Command("osascript", "-e", script).Run()
 }

@@ -113,7 +113,7 @@ func OnReady() {
 				resultMu.Unlock()
 				if title != "" {
 					copyToClipboard(title)
-					notify.ShowNotification("Copied to clipboard", title)
+					notify.ShowNotification("Copied to clipboard", title, nil)
 				}
 			}
 		}()
@@ -146,7 +146,7 @@ func runScan() {
 
 	if err != nil {
 		statusItem.SetTitle(fmt.Sprintf("Error: %v", err))
-		notify.ShowNotification("Scan failed", err.Error())
+		notify.ShowNotification("Scan failed", err.Error(), nil)
 		return
 	}
 
@@ -169,7 +169,7 @@ func updateResults(results []string) {
 	if len(results) == 0 {
 		clearItem.Hide()
 		statusItem.SetTitle("No QR codes found")
-		notify.ShowNotification("Squrl", "No QR codes found on screen")
+		notify.ShowNotification("Squrl", "No QR codes found on screen", nil)
 		return
 	}
 
@@ -190,7 +190,7 @@ func updateResults(results []string) {
 
 	summary := fmt.Sprintf("Found %d QR code(s)", len(results))
 	detail := strings.Join(results[:count], "\n")
-	notify.ShowNotification(summary, detail)
+	notify.ShowNotification(summary, detail, openMenu)
 }
 
 // clearResults hides all result slots and resets status.
