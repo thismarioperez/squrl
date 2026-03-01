@@ -15,7 +15,7 @@ var menubarIcon []byte
 //go:embed menubar_44.png
 var menubarIcon2x []byte
 
-//go:embed icon_64.png
+//go:embed notification_64.png
 var notificationIcon []byte
 
 // Icon returns the 22×22 menu bar template icon PNG (1x).

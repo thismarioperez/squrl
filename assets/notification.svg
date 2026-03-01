@@ -7,7 +7,7 @@
    id="svg26"
    sodipodi0:docname="squirrel-icon-v7.svg"
    inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
-   sodipodi:docname="icon.svg"
+   sodipodi:docname="notification.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -22,14 +22,14 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
-     inkscape:zoom="0.37732685"
-     inkscape:cx="43.728666"
-     inkscape:cy="304.77555"
-     inkscape:window-width="1728"
-     inkscape:window-height="1055"
+     inkscape:zoom="0.55580429"
+     inkscape:cx="128.6424"
+     inkscape:cy="200.61018"
+     inkscape:window-width="1684"
+     inkscape:window-height="988"
      inkscape:window-x="0"
      inkscape:window-y="34"
-     inkscape:window-maximized="1"
+     inkscape:window-maximized="0"
      inkscape:current-layer="svg26" />
   <defs
      id="defs26" />
@@ -52,16 +52,6 @@
      inkscape:window-maximized="1"
      inkscape:current-layer="svg26" />
   <!-- Background -->
-  <rect
-     width="512"
-     height="512"
-     rx="112"
-     ry="112"
-     fill="#1c1917"
-     id="rect1"
-     x="0"
-     y="0"
-     style="display:inline" />
   <!-- TAIL -->
   <!-- BODY â rounded rect -->
   <!-- Belly â squarish rounded rect -->
@@ -75,7 +65,7 @@
   <!-- Eyes -->
   <g
      id="g1"
-     transform="translate(12.037724)">
+     transform="matrix(1.8671359,0,0,1.7660931,-199.51072,-197.42589)">
     <path
        d="m 270,390 c 0,0 -110,-15 -138,-122 -26,-106 73,-173 156,-150 60,17 87,67 64,130 -22,60 -62,70 -64,120 z"
        fill="#b85c2a"
@@ -254,12 +244,12 @@
          id="ellipse21" />
     </g>
     <polygon
-       points="240,192 198,192 215,145 "
+       points="215,145 240,192 198,192 "
        fill="#d97b4f"
        id="polygon24"
        transform="rotate(-11.227978,219,168.5)" />
     <polygon
-       points="314,192 270,192 295,145 "
+       points="295,145 314,192 270,192 "
        fill="#d97b4f"
        id="polygon25"
        transform="rotate(13.271296,292,168.5)" />
