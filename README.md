@@ -178,6 +178,7 @@ Icons are generated from SVG sources using `rsvg-convert` (from [librsvg](https:
 | --- | --- | --- |
 | `assets/icon.svg` | `assets/AppIcon.icns` | macOS `.app` bundle icon |
 | `assets/menubar.svg` | `assets/menubar_22.png`, `assets/menubar_44.png` | Menu bar template icon (1x and 2x/Retina) |
+| `assets/notification.svg` | `assets/notification_64.png` | Desktop notification icon (64×64, all platforms) |
 
 Install the dependency if you don't have it:
 
@@ -202,19 +203,26 @@ squrl/
 │   ├── notify/
 │   │   ├── notify_darwin.go      # macOS notifications (alerter with osascript fallback)
 │   │   ├── notify_linux.go       # Linux notifications (notify-send)
+│   │   ├── notify_unix.go        # Shared darwin/linux: writes notification icon to temp file
+│   │   ├── notify_unix_test.go
 │   │   └── notify_windows.go     # Windows notifications (stub)
 │   ├── scanner/
 │   │   ├── scanner.go            # Screen capture + QR decoding
 │   │   └── scanner_test.go
 │   └── tray/
+│       ├── menu_darwin.go        # macOS: opens tray menu on notification click (CGo/ObjC)
+│       ├── menu_linux.go         # Linux: no-op stub
+│       ├── menu_windows.go       # Windows: no-op stub
 │       ├── tray.go               # System tray UI
 │       └── tray_test.go
 ├── assets/
-│   ├── icon.go                   # Embeds menubar PNG icons
+│   ├── icon.go                   # Embeds menubar and notification PNG icons
 │   ├── icon.svg                  # App bundle icon source (squirrel)
 │   ├── menubar.svg               # Menu bar icon source
 │   ├── menubar_22.png            # Menu bar icon 1x (generated)
 │   ├── menubar_44.png            # Menu bar icon 2x/Retina (generated)
+│   ├── notification.svg          # Desktop notification icon source
+│   ├── notification_64.png       # Desktop notification icon 64×64 (generated)
 │   └── AppIcon.icns              # Generated macOS bundle icon
 ├── scripts/
 │   ├── build-app.sh              # macOS .app bundle build script
