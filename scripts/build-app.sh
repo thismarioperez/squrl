@@ -26,6 +26,15 @@ if [ -f "$REPO_ROOT/assets/AppIcon.icns" ]; then
     cp "$REPO_ROOT/assets/AppIcon.icns" "$APP_DIR/Contents/Resources/AppIcon.icns"
 fi
 
+# 4. Bundle alerter for notification click detection (optional).
+if ALERTER_BIN="$(command -v alerter 2>/dev/null)"; then
+    cp "$ALERTER_BIN" "$APP_DIR/Contents/MacOS/alerter"
+    echo "Bundled alerter: $ALERTER_BIN"
+else
+    echo "WARNING: alerter not found — notification click detection will be disabled."
+    echo "         Install with: brew install alerter"
+fi
+
 echo "Done: $APP_DIR"
 echo ""
 echo "Launch with:"

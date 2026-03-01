@@ -4,7 +4,9 @@ package notify
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"sync"
 )
@@ -16,8 +18,18 @@ var (
 
 func lookupAlerter() string {
 	alerterPathOnce.Do(func() {
-		p, err := exec.LookPath("alerter")
-		if err == nil {
+		// When running as a bundled .app, alerter lives next to the main binary
+		// in Contents/MacOS/. Check there first.
+		if exe, err := os.Executable(); err == nil {
+			candidate := filepath.Join(filepath.Dir(exe), "alerter")
+			if _, err := os.Stat(candidate); err == nil {
+				alerterPath = candidate
+				return
+			}
+		}
+
+		// Fall back to PATH (local development with alerter installed via Homebrew).
+		if p, err := exec.LookPath("alerter"); err == nil {
 			alerterPath = p
 		}
 	})

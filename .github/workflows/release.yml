@@ -21,6 +21,16 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - name: Install alerter
+        env:
+          ALERTER_VERSION: "26.5"
+          ALERTER_SHA256: "11f63cddc9bb3f8554ed9b762632a120cfa7bee05e3c09d65734823e09d24f10"
+        run: |
+          curl -fsSL "https://github.com/vjeantet/alerter/releases/download/v${ALERTER_VERSION}/alerter-${ALERTER_VERSION}.zip" -o alerter.zip
+          echo "${ALERTER_SHA256}  alerter.zip" | shasum -a 256 --check
+          unzip -q alerter.zip -d alerter-bin
+          sudo mv alerter-bin/alerter /usr/local/bin/alerter
+
       - name: Build .app bundle
         env:
           LDFLAGS: "-X main.version=${{ github.ref_name }}"
