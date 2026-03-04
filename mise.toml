@@ -13,6 +13,11 @@ description = "Build the binary to bin/squrl. Extra args are forwarded to go bui
 depends = ["check-deps"]
 run = "go build -ldflags \"-X main.version=dev\" -o bin/squrl ./cmd/squrl/ $@"
 
+[tasks.build-debug]
+description = "Build the binary with debug symbols (no optimisations) to bin/squrl — Linux debug attach target"
+depends = ["check-deps"]
+run = "go build -gcflags \"all=-N -l\" -ldflags \"-X main.version=dev\" -o bin/squrl ./cmd/squrl/"
+
 [tasks.bundle]
 description = "Build the macOS .app bundle (Squrl.app) — macOS only. Pass 'debug' to build with debug symbols."
 depends = ["clean"]

@@ -49,6 +49,22 @@
       "problemMatcher": "$go"
     },
     {
+      // Builds a debug binary (no optimisations) to bin/squrl so VS Code can
+      // attach dlv on Linux where there is no .app bundle.
+      "label": "mise: build debug",
+      "type": "shell",
+      "command": "mise run build-debug",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "problemMatcher": "$go"
+    },
+    {
       "label": "mise: test",
       "type": "shell",
       "command": "mise run test",

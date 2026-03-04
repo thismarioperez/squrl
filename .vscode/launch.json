@@ -28,6 +28,32 @@
         "SQURL_DEBUG": "1"
       },
       "showLog": true
+    },
+    {
+      // Builds a debug binary (via preLaunchTask) then attaches dlv on Linux.
+      "name": "Debug squrl (Linux)",
+      "type": "go",
+      "request": "launch",
+      "mode": "exec",
+      "program": "${workspaceFolder}/bin/squrl",
+      "preLaunchTask": "mise: build debug",
+      "env": {
+        "SQURL_DEBUG": "1"
+      },
+      "showLog": true
+    },
+    {
+      // Runs a pre-built bin/squrl under dlv. Use this when the binary
+      // already exists (e.g. after mise run build-debug).
+      "name": "Debug squrl (Linux, pre-built)",
+      "type": "go",
+      "request": "launch",
+      "mode": "exec",
+      "program": "${workspaceFolder}/bin/squrl",
+      "env": {
+        "SQURL_DEBUG": "1"
+      },
+      "showLog": true
     }
   ]
 }
