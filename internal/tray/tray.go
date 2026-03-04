@@ -67,6 +67,7 @@ func parseDarkMode(out []byte, err error) bool {
 
 // OnReady is called by systray once the tray icon is ready. Runs in a goroutine.
 func OnReady() {
+	initPlatform()
 	setTrayIcon()
 	systray.SetTooltip("Squrl — click to scan")
 

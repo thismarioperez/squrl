@@ -28,6 +28,16 @@ void openSystrayMenu(void) {
         [item.button performClick:nil];
     });
 }
+
+// suppressDockIcon explicitly sets the app activation policy to Accessory so
+// that no Dock tile or app-switcher entry is shown. LSUIElement=true in the
+// Info.plist should be sufficient, but macOS Sequoia (15+) may still briefly
+// display the icon during startup unless the policy is also set in code.
+void suppressDockIcon(void) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
+    });
+}
 */
 import "C"
 
@@ -35,4 +45,10 @@ import "C"
 // a click on the status bar button via the Objective-C runtime.
 func openMenu() {
 	C.openSystrayMenu()
+}
+
+// initPlatform suppresses the Dock icon on macOS Sequoia and later, where
+// LSUIElement alone may not prevent the icon from appearing at startup.
+func initPlatform() {
+	C.suppressDockIcon()
 }
