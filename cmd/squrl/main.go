@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/getlantern/systray"
+	"github.com/thismarioperez/squrl/internal/logging"
 	"github.com/thismarioperez/squrl/internal/tray"
 )
 
@@ -16,6 +17,9 @@ func main() {
 		fmt.Println(version)
 		os.Exit(0)
 	}
+
+	cleanup := logging.Init()
+	defer cleanup()
 
 	tray.SetVersion(version)
 

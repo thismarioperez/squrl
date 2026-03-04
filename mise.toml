@@ -20,7 +20,20 @@ run = "scripts/build-app.sh"
 [tasks.start]
 description = "Run the app directly (development)"
 depends = ["check-deps"]
+env = { "SQURL_DEBUG" = "1" }
 run = "go run ./cmd/squrl/"
+
+[tasks.start-macos]
+description = "Run the app on macOS (development) — builds a dev .app bundle so the menu bar icon appears"
+depends = ["check-deps"]
+env = { "SQURL_DEBUG" = "1" }
+run = "scripts/build-app.sh && Squrl.app/Contents/MacOS/squrl"
+
+[tasks.debug-macos]
+description = "Run under Delve on macOS — builds a dev .app bundle with debug symbols then launches dlv exec"
+depends = ["check-deps"]
+env = { "SQURL_DEBUG" = "1" }
+run = "scripts/build-app.sh debug && dlv exec Squrl.app/Contents/MacOS/squrl"
 
 [tasks.test]
 description = "Run all tests"
@@ -33,3 +46,7 @@ run = "go mod tidy"
 [tasks.clean]
 description = "Remove build artefacts"
 run = "rm -rf bin/ 'Squrl.app'"
+
+[tasks.release]
+description = "Cut a new release"
+run = "bash scripts/release.sh $@"

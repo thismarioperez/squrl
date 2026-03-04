@@ -2,6 +2,7 @@ package tray
 
 import (
 	"fmt"
+	"log/slog"
 	"os/exec"
 	"runtime"
 	"strings"
@@ -70,6 +71,7 @@ func OnReady() {
 	initPlatform()
 
 	if !hasScreenCapturePermission() {
+		slog.Warn("screen capture permission not granted")
 		requestScreenCapturePermission()
 		notify.ShowNotification(notify.Notification{
 			Title:   "Screen Recording permission required",
@@ -143,6 +145,7 @@ func runScan() {
 	scanning = true
 	resultMu.Unlock()
 
+	slog.Debug("scan started")
 	scanItem.Disable()
 	statusItem.SetTitle("Scanning…")
 
@@ -155,11 +158,13 @@ func runScan() {
 	scanItem.Enable()
 
 	if err != nil {
+		slog.Error("scan failed", "err", err)
 		statusItem.SetTitle(fmt.Sprintf("Error: %v", err))
 		notify.ShowNotification(notify.Notification{Title: "Scan failed", Message: err.Error(), OnActivate: openMenu})
 		return
 	}
 
+	slog.Debug("scan complete", "results", len(results))
 	updateResults(results)
 }
 
@@ -222,7 +227,9 @@ func clearResults() {
 
 // copyToClipboard writes text to the system clipboard.
 func copyToClipboard(text string) {
-	_ = clipboard.WriteAll(text)
+	if err := clipboard.WriteAll(text); err != nil {
+		slog.Error("clipboard write failed", "err", err)
+	}
 }
 
 // truncate shortens s to at most n runes, appending "…" if truncated.

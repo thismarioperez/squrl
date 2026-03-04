@@ -5,6 +5,7 @@ package notify
 import (
 	"bufio"
 	"fmt"
+	"log/slog"
 	"os/exec"
 )
 
@@ -37,9 +38,11 @@ func ShowNotification(n Notification) {
 			cmd := exec.Command("notify-send", args...)
 			stdout, err := cmd.StdoutPipe()
 			if err != nil {
+				slog.Error("notify-send stdout pipe failed", "err", err)
 				return
 			}
 			if err := cmd.Start(); err != nil {
+				slog.Error("notify-send start failed", "err", err)
 				return
 			}
 			scanner := bufio.NewScanner(stdout)

@@ -4,6 +4,7 @@ package notify
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -25,6 +26,7 @@ func lookupAlerter() string {
 			candidate := filepath.Join(filepath.Dir(exe), "alerter")
 			if _, err := os.Stat(candidate); err == nil {
 				alerterPath = candidate
+				slog.Debug("alerter found next to binary", "path", alerterPath)
 				return
 			}
 		}
@@ -32,6 +34,7 @@ func lookupAlerter() string {
 		// Fall back to PATH (local development with alerter installed via Homebrew).
 		if p, err := exec.LookPath("alerter"); err == nil {
 			alerterPath = p
+			slog.Debug("alerter found in PATH", "path", alerterPath)
 		}
 	})
 	return alerterPath
@@ -68,6 +71,9 @@ func ShowNotification(n Notification) {
 			}
 			// dur < 0 means indefinite: omit -timeout so alerter waits until dismissed
 			out, err := exec.Command(p, args...).Output()
+			if err != nil {
+				slog.Error("alerter exec failed", "err", err)
+			}
 			if err == nil && strings.TrimSpace(string(out)) == "@CONTENTCLICKED" && n.OnActivate != nil {
 				n.OnActivate()
 			}
@@ -76,8 +82,11 @@ func ShowNotification(n Notification) {
 	}
 
 	// Fallback: osascript (no click detection).
+	slog.Debug("alerter not available, falling back to osascript")
 	safeTitle := strings.ReplaceAll(n.Title, `"`, `'`)
 	safeMsg := strings.ReplaceAll(n.Message, `"`, `'`)
 	script := fmt.Sprintf(`display notification %q with title %q`, safeMsg, safeTitle)
-	_ = exec.Command("osascript", "-e", script).Run()
+	if err := exec.Command("osascript", "-e", script).Run(); err != nil {
+		slog.Error("osascript notification failed", "err", err)
+	}
 }

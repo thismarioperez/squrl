@@ -1,0 +1,21 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      // Builds a debug binary (no optimisations) inside Squrl.app so macOS
+      // resolves Info.plist and the menu bar icon appears when VS Code attaches.
+      "label": "bundle-debug (macOS)",
+      "type": "shell",
+      "command": "scripts/build-app.sh debug",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "problemMatcher": "$go"
+    }
+  ]
+}
