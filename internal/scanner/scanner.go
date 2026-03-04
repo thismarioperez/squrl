@@ -15,6 +15,10 @@ import (
 // ScanAllScreens captures every active display and returns the decoded text from
 // all QR codes found. Duplicate results across displays are deduplicated.
 func ScanAllScreens(ctx context.Context) ([]string, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	n := screenshot.NumActiveDisplays()
 	slog.Debug("active displays", "count", n)
 	if n == 0 {
