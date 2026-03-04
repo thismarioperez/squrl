@@ -65,6 +65,22 @@
       "problemMatcher": "$go"
     },
     {
+      // Preferred method for running/debugging on Linux — runs the app directly
+      // via go run without building a separate binary or bundle.
+      "label": "mise: start",
+      "type": "shell",
+      "command": "mise run start",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": "$go"
+    },
+    {
       "label": "mise: test",
       "type": "shell",
       "command": "mise run test",
