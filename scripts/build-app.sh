@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 # build-app.sh — packages the binary into a macOS .app bundle.
+#
+# Usage:
+#   scripts/build-app.sh        — release build (default)
+#   scripts/build-app.sh debug  — debug build (no optimisations, for use with dlv)
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -7,13 +11,18 @@ REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 APP_NAME="Squrl"
 APP_DIR="$REPO_ROOT/$APP_NAME.app"
 BINARY_NAME="squrl"
+MODE="${1:-}"
 
 echo "Building $APP_NAME.app..."
 
 # 1. Build the binary.
 cd "$REPO_ROOT"
 LDFLAGS="${LDFLAGS:--X main.version=dev}"
-CGO_ENABLED=1 go build -ldflags "$LDFLAGS" -o "bin/$BINARY_NAME" ./cmd/squrl/
+if [[ "$MODE" == "debug" ]]; then
+  CGO_ENABLED=1 go build -gcflags "all=-N -l" -ldflags "$LDFLAGS" -o "bin/$BINARY_NAME" ./cmd/squrl/
+else
+  CGO_ENABLED=1 go build -ldflags "$LDFLAGS" -o "bin/$BINARY_NAME" ./cmd/squrl/
+fi
 
 # 2. Create bundle structure.
 mkdir -p "$APP_DIR/Contents/MacOS"

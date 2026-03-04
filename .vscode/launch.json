@@ -1,0 +1,33 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // Builds a debug .app bundle (via preLaunchTask) then attaches dlv.
+      // Running from inside Squrl.app ensures macOS resolves Info.plist so
+      // the menu bar icon appears during debugging.
+      "name": "Debug squrl (macOS)",
+      "type": "go",
+      "request": "launch",
+      "mode": "exec",
+      "program": "${workspaceFolder}/Squrl.app/Contents/MacOS/squrl",
+      "preLaunchTask": "mise: bundle debug",
+      "env": {
+        "SQURL_DEBUG": "1"
+      },
+      "showLog": true
+    },
+    {
+      // Runs a pre-built bundle binary under dlv. Use this when the bundle
+      // already exists (e.g. after mise run debug-macos or bundle-debug (macOS)).
+      "name": "Debug squrl (macOS, pre-built)",
+      "type": "go",
+      "request": "launch",
+      "mode": "exec",
+      "program": "${workspaceFolder}/Squrl.app/Contents/MacOS/squrl",
+      "env": {
+        "SQURL_DEBUG": "1"
+      },
+      "showLog": true
+    },
+  ]
+}

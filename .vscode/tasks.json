@@ -1,0 +1,115 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "mise: build",
+      "type": "shell",
+      "command": "mise run build",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": "$go"
+    },
+    {
+      "label": "mise: bundle",
+      "type": "shell",
+      "command": "mise run bundle",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": "$go"
+    },
+    {
+      // Builds a debug binary (no optimisations) inside Squrl.app so macOS
+      // resolves Info.plist and the menu bar icon appears when VS Code attaches.
+      "label": "mise: bundle debug",
+      "type": "shell",
+      "command": "mise run bundle debug",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "problemMatcher": "$go"
+    },
+    {
+      // Builds a debug binary (no optimisations) to bin/squrl so VS Code can
+      // attach dlv on Linux where there is no .app bundle.
+      "label": "mise: build debug",
+      "type": "shell",
+      "command": "mise run build-debug",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "problemMatcher": "$go"
+    },
+    {
+      // Preferred method for running/debugging on Linux — runs the app directly
+      // via go run without building a separate binary or bundle.
+      "label": "mise: start",
+      "type": "shell",
+      "command": "mise run start",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": "$go"
+    },
+    {
+      "label": "mise: test",
+      "type": "shell",
+      "command": "mise run test",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": "$go"
+    },
+    {
+      "label": "mise: clean",
+      "type": "shell",
+      "command": "mise run clean",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

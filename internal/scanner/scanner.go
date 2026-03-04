@@ -1,8 +1,10 @@
 package scanner
 
 import (
+	"context"
 	"fmt"
 	"image"
+	"log/slog"
 
 	"github.com/kbinani/screenshot"
 	"github.com/makiuchi-d/gozxing"
@@ -12,8 +14,9 @@ import (
 
 // ScanAllScreens captures every active display and returns the decoded text from
 // all QR codes found. Duplicate results across displays are deduplicated.
-func ScanAllScreens() ([]string, error) {
+func ScanAllScreens(ctx context.Context) ([]string, error) {
 	n := screenshot.NumActiveDisplays()
+	slog.Debug("active displays", "count", n)
 	if n == 0 {
 		return nil, fmt.Errorf("no active displays found — ensure screen capture permission is granted")
 	}
@@ -23,8 +26,12 @@ func ScanAllScreens() ([]string, error) {
 	captured := 0
 
 	for i := 0; i < n; i++ {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
 		img, err := screenshot.CaptureDisplay(i)
 		if err != nil {
+			slog.Error("capture display failed", "display", i, "err", err)
 			continue
 		}
 		captured++
@@ -32,6 +39,7 @@ func ScanAllScreens() ([]string, error) {
 		codes, err := decodeQRCodes(img)
 		if err != nil {
 			// gozxing returns an error when nothing is found — not fatal.
+			slog.Debug("no QR codes on display", "display", i, "err", err)
 			continue
 		}
 
@@ -47,6 +55,7 @@ func ScanAllScreens() ([]string, error) {
 		return nil, fmt.Errorf("could not capture any displays — ensure screen capture permission is granted")
 	}
 
+	slog.Debug("scan complete", "captured_displays", captured, "unique_results", len(results))
 	return results, nil
 }
 

@@ -2,6 +2,8 @@ package scanner
 
 import (
 	"bytes"
+	"context"
+	"errors"
 	"image"
 	"image/color"
 	"image/png"
@@ -62,5 +64,15 @@ func TestDecodeQRCodes_NoCode(t *testing.T) {
 	got, err := decodeQRCodes(img)
 	if err == nil {
 		t.Errorf("expected an error for blank image, got results: %v", got)
+	}
+}
+
+func TestScanAllScreens_CancelledContext(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel() // pre-cancel before calling
+
+	_, err := ScanAllScreens(ctx)
+	if !errors.Is(err, context.Canceled) {
+		t.Errorf("expected context.Canceled, got %v", err)
 	}
 }

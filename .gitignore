@@ -19,10 +19,14 @@ bin/
 __MACOSX/
 
 # IDE
-.vscode/
 .idea/
 *.swp
 *.swo
+.vscode/**/*
+# Allow vscode launch and task configs
+!.vscode/launch.json
+!.vscode/tasks.json
+
 
 # mise local overrides
 .mise.local.toml
