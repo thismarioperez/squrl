@@ -54,27 +54,48 @@ func ShowNotification(ctx context.Context, n Notification) {
 		dur = DefaultDuration
 	}
 
+	osascript := func() {
+		safeTitle := strings.ReplaceAll(n.Title, `"`, `'`)
+		safeMsg := strings.ReplaceAll(n.Message, `"`, `'`)
+		script := fmt.Sprintf(`display notification %q with title %q`, safeMsg, safeTitle)
+		if err := exec.CommandContext(ctx, "osascript", "-e", script).Run(); err != nil {
+			if ctx.Err() == nil {
+				slog.Error("osascript notification failed", "err", err)
+			}
+		}
+	}
+
 	if p := lookupAlerter(); p != "" {
 		go func() {
 			iconPath, cleanup := writeIconTemp()
 			defer cleanup()
 
-			args := []string{
+			baseArgs := []string{
 				"--title", n.Title,
 				"--message", n.Message,
 				"--group", "com.mario.squrl",
-			}
-			if iconPath != "" {
-				args = append(args, "--app-icon", iconPath)
+				"--sender", "com.apple.Terminal",
 			}
 			if dur > 0 {
-				args = append(args, "--timeout", fmt.Sprintf("%d", int(dur/time.Second)))
+				baseArgs = append(baseArgs, "--timeout", fmt.Sprintf("%d", int(dur/time.Second)))
 			}
-			// dur < 0 means indefinite: omit -timeout so alerter waits until dismissed
+			// dur < 0 means indefinite: omit --timeout so alerter waits until dismissed.
+
+			args := baseArgs
+			if iconPath != "" {
+				args = append(append([]string{}, baseArgs...), "--app-icon", iconPath)
+			}
 			out, err := exec.CommandContext(ctx, p, args...).Output()
+			if err != nil && iconPath != "" {
+				// --app-icon uses a private API that can fail on some macOS versions.
+				// Retry without it before giving up.
+				slog.Debug("alerter failed with --app-icon, retrying without it", "err", err)
+				out, err = exec.CommandContext(ctx, p, baseArgs...).Output()
+			}
 			if err != nil {
 				if ctx.Err() == nil {
-					slog.Error("alerter exec failed", "err", err)
+					slog.Warn("alerter failed, falling back to osascript", "err", err)
+					osascript()
 				}
 				return
 			}
@@ -85,14 +106,7 @@ func ShowNotification(ctx context.Context, n Notification) {
 		return
 	}
 
-	// Fallback: osascript (no click detection).
+	// Fallback: osascript (no click detection) when alerter is not available.
 	slog.Debug("alerter not available, falling back to osascript")
-	safeTitle := strings.ReplaceAll(n.Title, `"`, `'`)
-	safeMsg := strings.ReplaceAll(n.Message, `"`, `'`)
-	script := fmt.Sprintf(`display notification %q with title %q`, safeMsg, safeTitle)
-	if err := exec.CommandContext(ctx, "osascript", "-e", script).Run(); err != nil {
-		if ctx.Err() == nil {
-			slog.Error("osascript notification failed", "err", err)
-		}
-	}
+	osascript()
 }
