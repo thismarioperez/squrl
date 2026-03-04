@@ -158,12 +158,12 @@ All tasks are defined in `mise.toml` and run via `mise run <task>`.
 
 | Task                     | Description                                                   |
 | ------------------------ | ------------------------------------------------------------- |
-| `mise run build`         | Compile binary to `bin/squrl`                                 |
-| `mise run bundle`        | Build `Squrl.app` bundle (macOS)                              |
-| `mise run start`         | Run directly without bundling (all platforms, `SQURL_DEBUG=1`) |
+| `mise run build`         | Compile binary to `bin/squrl`. Extra args forwarded to `go build` (e.g. `-race`) |
+| `mise run bundle`        | Clean then build `Squrl.app` bundle (macOS). Pass `debug` for a debug build (no optimisations) |
+| `mise run start`         | Run directly without bundling (all platforms, `SQURL_DEBUG=1`). Extra args forwarded to `go run` |
 | `mise run start-macos`   | Build dev bundle and run `Squrl.app` directly (macOS, `SQURL_DEBUG=1`) |
 | `mise run debug-macos`   | Build debug bundle (no optimisations) and launch `dlv exec` (macOS) |
-| `mise run test`          | Run all tests                                                 |
+| `mise run test`          | Run all tests. Extra args forwarded to `go test` (e.g. `-run TestFoo -v`) |
 | `mise run tidy`          | Tidy Go module dependencies                                   |
 | `mise run clean`         | Remove `bin/` and `Squrl.app`                                 |
 
@@ -199,9 +199,9 @@ The log captures: display count, per-display capture errors, QR decode results, 
 
 ### Interactive debugging with VS Code + delve
 
-Two launch configurations are provided in `.vscode/launch.json`, backed by a build task in `.vscode/tasks.json`:
+Two launch configurations are provided in `.vscode/launch.json`, backed by build tasks in `.vscode/tasks.json`:
 
-**Debug squrl (macOS)** — runs a `bundle-debug (macOS)` preLaunchTask that calls `scripts/build-app.sh debug` (builds with `-gcflags "all=-N -l"`, no optimisations), then attaches delve to `Squrl.app/Contents/MacOS/squrl` with `SQURL_DEBUG=1`. Use this for day-to-day breakpoint debugging.
+**Debug squrl (macOS)** — runs the `mise: bundle debug` preLaunchTask (`mise run bundle debug`, builds with `-gcflags "all=-N -l"`, no optimisations), then attaches delve to `Squrl.app/Contents/MacOS/squrl` with `SQURL_DEBUG=1`. Use this for day-to-day breakpoint debugging.
 
 **Debug squrl (macOS, pre-built)** — attaches delve to an already-built `Squrl.app/Contents/MacOS/squrl` with `SQURL_DEBUG=1`, skipping the build step. Use this when the bundle is already present.
 
@@ -212,7 +212,7 @@ To pre-build the debug bundle from the terminal and then attach VS Code:
 mise run debug-macos
 
 # — or just build without launching dlv, then use VS Code to attach —
-scripts/build-app.sh debug
+mise run bundle debug
 # Launch via VS Code: Run & Debug → "Debug squrl (macOS, pre-built)"
 ```
 
@@ -298,7 +298,7 @@ squrl/
 │   └── release.sh                # Release build script
 ├── .vscode/
 │   ├── launch.json               # VS Code delve debug launch configurations
-│   └── tasks.json                # VS Code pre-launch build tasks (bundle-debug)
+│   └── tasks.json                # VS Code mise-backed tasks (build, bundle, bundle debug, test, clean)
 ├── Info.plist                    # macOS app bundle metadata
 ├── mise.toml                     # Tooling + task definitions
 ├── go.mod

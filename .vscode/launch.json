@@ -10,7 +10,7 @@
       "request": "launch",
       "mode": "exec",
       "program": "${workspaceFolder}/Squrl.app/Contents/MacOS/squrl",
-      "preLaunchTask": "bundle-debug (macOS)",
+      "preLaunchTask": "mise: bundle debug",
       "env": {
         "SQURL_DEBUG": "1"
       },
