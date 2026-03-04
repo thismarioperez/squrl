@@ -4,6 +4,7 @@ package notify
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"log/slog"
 	"os/exec"
@@ -13,7 +14,7 @@ import (
 // Requires libnotify-bin (or equivalent) to be installed.
 // When onActivate is non-nil, the callback is invoked if the user clicks the
 // notification body (requires notify-send with --wait/--action support).
-func ShowNotification(n Notification) {
+func ShowNotification(ctx context.Context, n Notification) {
 	dur := n.Duration
 	if dur == 0 {
 		dur = DefaultDuration
@@ -35,14 +36,16 @@ func ShowNotification(n Notification) {
 				args = append(args, "--icon", iconPath)
 			}
 			args = append(args, n.Title, n.Message)
-			cmd := exec.Command("notify-send", args...)
+			cmd := exec.CommandContext(ctx, "notify-send", args...)
 			stdout, err := cmd.StdoutPipe()
 			if err != nil {
 				slog.Error("notify-send stdout pipe failed", "err", err)
 				return
 			}
 			if err := cmd.Start(); err != nil {
-				slog.Error("notify-send start failed", "err", err)
+				if ctx.Err() == nil {
+					slog.Error("notify-send start failed", "err", err)
+				}
 				return
 			}
 			scanner := bufio.NewScanner(stdout)
@@ -65,5 +68,9 @@ func ShowNotification(n Notification) {
 		args = append(args, "--icon", iconPath)
 	}
 	args = append(args, n.Title, n.Message)
-	_ = exec.Command("notify-send", args...).Run()
+	if err := exec.CommandContext(ctx, "notify-send", args...).Run(); err != nil {
+		if ctx.Err() == nil {
+			slog.Error("notify-send failed", "err", err)
+		}
+	}
 }

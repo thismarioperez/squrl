@@ -3,6 +3,7 @@
 package notify
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
@@ -43,7 +44,7 @@ func lookupAlerter() string {
 // ShowNotification displays a macOS notification. Uses alerter when available so
 // the callback is invoked if the user clicks the notification body.
 // Falls back to osascript (no click detection) when alerter is unavailable.
-func ShowNotification(n Notification) {
+func ShowNotification(ctx context.Context, n Notification) {
 	if len(n.Message) > 200 {
 		n.Message = n.Message[:197] + "..."
 	}
@@ -70,11 +71,14 @@ func ShowNotification(n Notification) {
 				args = append(args, "--timeout", fmt.Sprintf("%d", int(dur/time.Second)))
 			}
 			// dur < 0 means indefinite: omit -timeout so alerter waits until dismissed
-			out, err := exec.Command(p, args...).Output()
+			out, err := exec.CommandContext(ctx, p, args...).Output()
 			if err != nil {
-				slog.Error("alerter exec failed", "err", err)
+				if ctx.Err() == nil {
+					slog.Error("alerter exec failed", "err", err)
+				}
+				return
 			}
-			if err == nil && strings.TrimSpace(string(out)) == "@CONTENTCLICKED" && n.OnActivate != nil {
+			if strings.TrimSpace(string(out)) == "@CONTENTCLICKED" && n.OnActivate != nil {
 				n.OnActivate()
 			}
 		}()
@@ -86,7 +90,9 @@ func ShowNotification(n Notification) {
 	safeTitle := strings.ReplaceAll(n.Title, `"`, `'`)
 	safeMsg := strings.ReplaceAll(n.Message, `"`, `'`)
 	script := fmt.Sprintf(`display notification %q with title %q`, safeMsg, safeTitle)
-	if err := exec.Command("osascript", "-e", script).Run(); err != nil {
-		slog.Error("osascript notification failed", "err", err)
+	if err := exec.CommandContext(ctx, "osascript", "-e", script).Run(); err != nil {
+		if ctx.Err() == nil {
+			slog.Error("osascript notification failed", "err", err)
+		}
 	}
 }

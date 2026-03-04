@@ -1,6 +1,7 @@
 package scanner
 
 import (
+	"context"
 	"fmt"
 	"image"
 	"log/slog"
@@ -13,7 +14,7 @@ import (
 
 // ScanAllScreens captures every active display and returns the decoded text from
 // all QR codes found. Duplicate results across displays are deduplicated.
-func ScanAllScreens() ([]string, error) {
+func ScanAllScreens(ctx context.Context) ([]string, error) {
 	n := screenshot.NumActiveDisplays()
 	slog.Debug("active displays", "count", n)
 	if n == 0 {
@@ -25,6 +26,9 @@ func ScanAllScreens() ([]string, error) {
 	captured := 0
 
 	for i := 0; i < n; i++ {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
 		img, err := screenshot.CaptureDisplay(i)
 		if err != nil {
 			slog.Error("capture display failed", "display", i, "err", err)

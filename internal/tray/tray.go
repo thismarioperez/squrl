@@ -1,12 +1,15 @@
 package tray
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os/exec"
 	"runtime"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/atotto/clipboard"
 	"github.com/getlantern/systray"
@@ -22,6 +25,8 @@ const maxResults = 20
 
 var (
 	appVersion   = "dev"
+	appCtx       context.Context
+	appCancel    context.CancelFunc
 	scanItem     *systray.MenuItem
 	clearItem    *systray.MenuItem
 	statusItem   *systray.MenuItem
@@ -68,12 +73,14 @@ func parseDarkMode(out []byte, err error) bool {
 
 // OnReady is called by systray once the tray icon is ready. Runs in a goroutine.
 func OnReady() {
+	appCtx, appCancel = context.WithCancel(context.Background())
+
 	initPlatform()
 
 	if !hasScreenCapturePermission() {
 		slog.Warn("screen capture permission not granted")
 		requestScreenCapturePermission()
-		notify.ShowNotification(notify.Notification{
+		notify.ShowNotification(appCtx, notify.Notification{
 			Title:   "Screen Recording permission required",
 			Message: "Grant access in System Settings → Privacy & Security → Screen Recording, then relaunch Squrl.",
 		})
@@ -125,7 +132,7 @@ func OnReady() {
 				resultMu.Unlock()
 				if title != "" {
 					copyToClipboard(title)
-					notify.ShowNotification(notify.Notification{Title: "Copied to clipboard", Message: title, OnActivate: openMenu})
+					notify.ShowNotification(appCtx, notify.Notification{Title: "Copied to clipboard", Message: title, OnActivate: openMenu})
 				}
 			}
 		}()
@@ -133,7 +140,11 @@ func OnReady() {
 }
 
 // OnExit is called by systray when the app is quitting.
-func OnExit() {}
+func OnExit() {
+	if appCancel != nil {
+		appCancel()
+	}
+}
 
 // runScan performs a screen capture and QR decode, then updates the menu.
 func runScan() {
@@ -149,7 +160,10 @@ func runScan() {
 	scanItem.Disable()
 	statusItem.SetTitle("Scanning…")
 
-	results, err := scanner.ScanAllScreens()
+	scanCtx, cancel := context.WithTimeout(appCtx, 30*time.Second)
+	defer cancel()
+
+	results, err := scanner.ScanAllScreens(scanCtx)
 
 	resultMu.Lock()
 	scanning = false
@@ -158,18 +172,26 @@ func runScan() {
 	scanItem.Enable()
 
 	if err != nil {
-		slog.Error("scan failed", "err", err)
-		statusItem.SetTitle(fmt.Sprintf("Error: %v", err))
-		notify.ShowNotification(notify.Notification{Title: "Scan failed", Message: err.Error(), OnActivate: openMenu})
+		if errors.Is(err, context.DeadlineExceeded) {
+			slog.Warn("scan timed out")
+			statusItem.SetTitle("Scan timed out")
+			notify.ShowNotification(appCtx, notify.Notification{Title: "Scan timed out", Message: "QR scan exceeded 30 seconds and was cancelled.", OnActivate: openMenu})
+		} else if errors.Is(err, context.Canceled) {
+			slog.Debug("scan cancelled (app quitting)")
+		} else {
+			slog.Error("scan failed", "err", err)
+			statusItem.SetTitle(fmt.Sprintf("Error: %v", err))
+			notify.ShowNotification(appCtx, notify.Notification{Title: "Scan failed", Message: err.Error(), OnActivate: openMenu})
+		}
 		return
 	}
 
 	slog.Debug("scan complete", "results", len(results))
-	updateResults(results)
+	updateResults(appCtx, results)
 }
 
 // updateResults rebuilds the result pool with the latest scan results.
-func updateResults(results []string) {
+func updateResults(ctx context.Context, results []string) {
 	resultMu.Lock()
 	defer resultMu.Unlock()
 
@@ -184,7 +206,7 @@ func updateResults(results []string) {
 	if len(results) == 0 {
 		clearItem.Hide()
 		statusItem.SetTitle("No QR codes found")
-		notify.ShowNotification(notify.Notification{Title: "Squrl", Message: "No QR codes found on screen", OnActivate: openMenu})
+		notify.ShowNotification(ctx, notify.Notification{Title: "Squrl", Message: "No QR codes found on screen", OnActivate: openMenu})
 		return
 	}
 
@@ -205,7 +227,7 @@ func updateResults(results []string) {
 
 	summary := fmt.Sprintf("Found %d QR code(s)", len(results))
 	detail := strings.Join(results[:count], "\n")
-	notify.ShowNotification(notify.Notification{Title: summary, Message: detail, OnActivate: openMenu})
+	notify.ShowNotification(ctx, notify.Notification{Title: summary, Message: detail, OnActivate: openMenu})
 }
 
 // clearResults hides all result slots and resets status.

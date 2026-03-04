@@ -15,7 +15,7 @@ run = "go build -ldflags \"-X main.version=dev\" -o bin/squrl ./cmd/squrl/"
 
 [tasks.bundle]
 description = "Build the macOS .app bundle (Squrl.app) — macOS only"
-run = "scripts/build-app.sh"
+run = "mise run clean && scripts/build-app.sh"
 
 [tasks.start]
 description = "Run the app directly (development)"
@@ -27,13 +27,13 @@ run = "go run ./cmd/squrl/"
 description = "Run the app on macOS (development) — builds a dev .app bundle so the menu bar icon appears"
 depends = ["check-deps"]
 env = { "SQURL_DEBUG" = "1" }
-run = "scripts/build-app.sh && Squrl.app/Contents/MacOS/squrl"
+run = "mise run clean && scripts/build-app.sh && Squrl.app/Contents/MacOS/squrl"
 
 [tasks.debug-macos]
 description = "Run under Delve on macOS — builds a dev .app bundle with debug symbols then launches dlv exec"
 depends = ["check-deps"]
 env = { "SQURL_DEBUG" = "1" }
-run = "scripts/build-app.sh debug && dlv exec Squrl.app/Contents/MacOS/squrl"
+run = "mise run clean && scripts/build-app.sh debug && dlv exec Squrl.app/Contents/MacOS/squrl"
 
 [tasks.test]
 description = "Run all tests"
