@@ -68,6 +68,16 @@ func parseDarkMode(out []byte, err error) bool {
 // OnReady is called by systray once the tray icon is ready. Runs in a goroutine.
 func OnReady() {
 	initPlatform()
+
+	if !hasScreenCapturePermission() {
+		requestScreenCapturePermission()
+		notify.ShowNotification(
+			"Screen Recording permission required",
+			"Grant access in System Settings → Privacy & Security → Screen Recording, then relaunch Squrl.",
+			nil,
+		)
+	}
+
 	setTrayIcon()
 	systray.SetTooltip("Squrl — click to scan")
 

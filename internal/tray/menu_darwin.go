@@ -4,9 +4,10 @@ package tray
 
 /*
 #cgo CFLAGS: -x objective-c
-#cgo LDFLAGS: -framework Cocoa
+#cgo LDFLAGS: -framework Cocoa -framework CoreGraphics
 
 #import <Cocoa/Cocoa.h>
+#import <CoreGraphics/CoreGraphics.h>
 #import <objc/runtime.h>
 
 // openSystrayMenu accesses the NSStatusItem stored as an ivar on systray's
@@ -38,6 +39,20 @@ void suppressDockIcon(void) {
         [NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
     });
 }
+
+// preflightScreenCapture returns true if Screen Recording permission has
+// already been granted. The permission only becomes active after a relaunch,
+// so this returning false is the signal to prompt and ask the user to restart.
+bool preflightScreenCapture(void) {
+    return CGPreflightScreenCaptureAccess();
+}
+
+// requestScreenCaptureAccess opens System Settings to the Screen Recording
+// pane so the user can grant permission. The new permission takes effect only
+// after the app is relaunched.
+void requestScreenCaptureAccess(void) {
+    CGRequestScreenCaptureAccess();
+}
 */
 import "C"
 
@@ -51,4 +66,16 @@ func openMenu() {
 // LSUIElement alone may not prevent the icon from appearing at startup.
 func initPlatform() {
 	C.suppressDockIcon()
+}
+
+// hasScreenCapturePermission returns true if Screen Recording permission is
+// already active. On macOS the permission only takes effect after a relaunch.
+func hasScreenCapturePermission() bool {
+	return bool(C.preflightScreenCapture())
+}
+
+// requestScreenCapturePermission opens System Settings to the Screen Recording
+// pane. The granted permission takes effect only after the app is relaunched.
+func requestScreenCapturePermission() {
+	C.requestScreenCaptureAccess()
 }
