@@ -34,13 +34,18 @@ Pre-built binaries are available on the [Releases](https://github.com/thismariop
    mv Squrl.app /Applications/
    ```
 
-4. **Remove the macOS quarantine flag.**
-   Because the app is not notarized, Gatekeeper will block it from opening. Run:
+4. **Allow the app to open.**
+   Because the app is not notarized, Gatekeeper will block it on first launch. Choose either method:
 
+   **Option A — System Settings (no Terminal required):**
+   - Try to open `Squrl.app`. macOS will show a "cannot be opened" alert — click **Done**.
+   - Open **System Settings → Privacy & Security**, scroll to the bottom, and click **Open Anyway** next to the Squrl message.
+   - Alternatively, right-click `Squrl.app` in Finder, choose **Open**, then click **Open** in the dialog.
+
+   **Option B — Terminal:**
    ```sh
    xattr -dr com.apple.quarantine /Applications/Squrl.app
    ```
-
    Replace `/Applications/Squrl.app` with wherever you placed the bundle if you skipped step 3.
 
 5. Open the app:
