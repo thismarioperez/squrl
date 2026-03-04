@@ -3,3 +3,5 @@
 package tray
 
 func openMenu() {}
+
+func initPlatform() {}
