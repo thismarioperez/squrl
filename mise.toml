@@ -52,3 +52,7 @@ run = "go mod tidy"
 [tasks.clean]
 description = "Remove build artefacts"
 run = "rm -rf bin/ 'Squrl.app'"
+
+[tasks.release]
+description = "Take a release build. Extra args are forwarded to ./scripts/release.sh"
+run = "./scripts/release.sh $@"
