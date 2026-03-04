@@ -38,6 +38,7 @@ fi
 # 4. Bundle alerter for notification click detection (optional).
 if ALERTER_BIN="$(command -v alerter 2>/dev/null)"; then
     cp "$ALERTER_BIN" "$APP_DIR/Contents/MacOS/alerter"
+    xattr -d com.apple.quarantine "$APP_DIR/Contents/MacOS/alerter" 2>/dev/null || true
     echo "Bundled alerter: $ALERTER_BIN"
 else
     echo "WARNING: alerter not found — notification click detection will be disabled."
