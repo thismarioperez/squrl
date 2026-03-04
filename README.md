@@ -144,7 +144,13 @@ Builds a `.app` bundle with `SQURL_DEBUG=1` and runs the binary directly (no sep
 mise run start-macos
 ```
 
-### Option C — Run directly (all platforms / development)
+### Option C — Run directly (Linux / all platforms)
+
+This is the **recommended development workflow on Linux**. It also works on macOS and Windows for quick runs without bundling.
+
+**VS Code:** open the Command Palette → **Tasks: Run Task** → **`mise: start`**. This is set as the default run task. Output (including debug logs) appears in the Terminal panel.
+
+**Terminal:**
 
 ```sh
 mise run start
@@ -160,7 +166,7 @@ All tasks are defined in `mise.toml` and run via `mise run <task>`.
 | ------------------------ | ------------------------------------------------------------- |
 | `mise run build`         | Compile binary to `bin/squrl`. Extra args forwarded to `go build` (e.g. `-race`) |
 | `mise run bundle`        | Clean then build `Squrl.app` bundle (macOS). Pass `debug` for a debug build (no optimisations) |
-| `mise run start`         | Run directly without bundling (all platforms, `SQURL_DEBUG=1`). Extra args forwarded to `go run` |
+| `mise run start`         | Run directly without bundling (`SQURL_DEBUG=1`). **Primary debug method on Linux.** Extra args forwarded to `go run` |
 | `mise run start-macos`   | Build dev bundle and run `Squrl.app` directly (macOS, `SQURL_DEBUG=1`) |
 | `mise run debug-macos`   | Build debug bundle (no optimisations) and launch `dlv exec` (macOS) |
 | `mise run test`          | Run all tests. Extra args forwarded to `go test` (e.g. `-run TestFoo -v`) |
@@ -169,13 +175,7 @@ All tasks are defined in `mise.toml` and run via `mise run <task>`.
 
 ## Debugging
 
-### Live log output
-
-Set `SQURL_DEBUG=1` before launching to enable structured debug logging. Logs are written to a platform-specific file and mirrored to stderr simultaneously.
-
-```sh
-mise run start
-```
+`SQURL_DEBUG=1` enables structured debug logging. Logs are written to a platform-specific file **and** mirrored to stderr simultaneously, so they appear directly in the terminal or VS Code panel.
 
 Log file locations:
 
@@ -185,21 +185,31 @@ Log file locations:
 | Linux    | `~/.local/share/squrl/squrl.log` |
 | Windows  | `%APPDATA%\squrl\squrl.log` |
 
-Tail the log in real time in a separate terminal:
+The log captures: display count, per-display capture errors, QR decode results, scan errors, notification dispatch, alerter path resolution, and clipboard failures.
+
+### Linux
+
+The recommended development workflow on Linux is the **`mise: start`** VS Code task, or equivalently `mise run start` in a terminal. It runs the app directly via `go run` with `SQURL_DEBUG=1` — no binary to build and no debugger to attach. Logs stream live to the terminal output.
+
+**VS Code:** open the Command Palette → **Tasks: Run Task** → **`mise: start`**. Output (including debug logs) appears in the Terminal panel.
+
+**Terminal:**
 
 ```sh
-# macOS
-tail -f ~/Library/Logs/squrl/squrl.log
+mise run start
+```
 
-# Linux
+To tail the log file separately (e.g. to keep it visible while the app is backgrounded):
+
+```sh
 tail -f ~/.local/share/squrl/squrl.log
 ```
 
-The log captures: display count, per-display capture errors, QR decode results, scan errors, notification dispatch, alerter path resolution, and clipboard failures.
+> **Note:** Interactive breakpoint debugging via delve is not supported on Linux. The Wayland screenshot portal used for screen capture does not respond reliably when the process is under ptrace, preventing scans from completing inside a dlv session.
 
-### Interactive debugging with VS Code + delve
+### macOS
 
-Two launch configurations are provided in `.vscode/launch.json`, backed by build tasks in `.vscode/tasks.json`:
+Two VS Code launch configurations are provided in `.vscode/launch.json`, backed by build tasks in `.vscode/tasks.json`:
 
 **Debug squrl (macOS)** — runs the `mise: bundle debug` preLaunchTask (`mise run bundle debug`, builds with `-gcflags "all=-N -l"`, no optimisations), then attaches delve to `Squrl.app/Contents/MacOS/squrl` with `SQURL_DEBUG=1`. Use this for day-to-day breakpoint debugging.
 
@@ -297,7 +307,7 @@ squrl/
 │   ├── make-icns.sh              # SVG → .icns + menubar PNGs
 │   └── release.sh                # Release build script
 ├── .vscode/
-│   ├── launch.json               # VS Code delve debug launch configurations
+│   ├── launch.json               # VS Code delve debug launch configurations (macOS only)
 │   └── tasks.json                # VS Code mise-backed tasks (build, bundle, bundle debug, test, clean)
 ├── Info.plist                    # macOS app bundle metadata
 ├── mise.toml                     # Tooling + task definitions
