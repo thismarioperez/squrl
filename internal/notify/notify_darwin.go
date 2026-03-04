@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 )
 
 var (
@@ -39,9 +40,14 @@ func lookupAlerter() string {
 // ShowNotification displays a macOS notification. Uses alerter when available so
 // the callback is invoked if the user clicks the notification body.
 // Falls back to osascript (no click detection) when alerter is unavailable.
-func ShowNotification(title, message string, onActivate func()) {
-	if len(message) > 200 {
-		message = message[:197] + "..."
+func ShowNotification(n Notification) {
+	if len(n.Message) > 200 {
+		n.Message = n.Message[:197] + "..."
+	}
+
+	dur := n.Duration
+	if dur == 0 {
+		dur = DefaultDuration
 	}
 
 	if p := lookupAlerter(); p != "" {
@@ -50,24 +56,28 @@ func ShowNotification(title, message string, onActivate func()) {
 			defer cleanup()
 
 			args := []string{
-				"--title", title,
-				"--message", message,
+				"--title", n.Title,
+				"--message", n.Message,
 				"--group", "com.mario.squrl",
 			}
 			if iconPath != "" {
 				args = append(args, "--app-icon", iconPath)
 			}
+			if dur > 0 {
+				args = append(args, "--timeout", fmt.Sprintf("%d", int(dur/time.Second)))
+			}
+			// dur < 0 means indefinite: omit -timeout so alerter waits until dismissed
 			out, err := exec.Command(p, args...).Output()
-			if err == nil && strings.TrimSpace(string(out)) == "@CONTENTCLICKED" && onActivate != nil {
-				onActivate()
+			if err == nil && strings.TrimSpace(string(out)) == "@CONTENTCLICKED" && n.OnActivate != nil {
+				n.OnActivate()
 			}
 		}()
 		return
 	}
 
 	// Fallback: osascript (no click detection).
-	safeTitle := strings.ReplaceAll(title, `"`, `'`)
-	safeMsg := strings.ReplaceAll(message, `"`, `'`)
+	safeTitle := strings.ReplaceAll(n.Title, `"`, `'`)
+	safeMsg := strings.ReplaceAll(n.Message, `"`, `'`)
 	script := fmt.Sprintf(`display notification %q with title %q`, safeMsg, safeTitle)
 	_ = exec.Command("osascript", "-e", script).Run()
 }
