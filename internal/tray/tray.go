@@ -71,11 +71,10 @@ func OnReady() {
 
 	if !hasScreenCapturePermission() {
 		requestScreenCapturePermission()
-		notify.ShowNotification(
-			"Screen Recording permission required",
-			"Grant access in System Settings → Privacy & Security → Screen Recording, then relaunch Squrl.",
-			nil,
-		)
+		notify.ShowNotification(notify.Notification{
+			Title:   "Screen Recording permission required",
+			Message: "Grant access in System Settings → Privacy & Security → Screen Recording, then relaunch Squrl.",
+		})
 	}
 
 	setTrayIcon()
@@ -124,7 +123,7 @@ func OnReady() {
 				resultMu.Unlock()
 				if title != "" {
 					copyToClipboard(title)
-					notify.ShowNotification("Copied to clipboard", title, openMenu)
+					notify.ShowNotification(notify.Notification{Title: "Copied to clipboard", Message: title, OnActivate: openMenu})
 				}
 			}
 		}()
@@ -157,7 +156,7 @@ func runScan() {
 
 	if err != nil {
 		statusItem.SetTitle(fmt.Sprintf("Error: %v", err))
-		notify.ShowNotification("Scan failed", err.Error(), openMenu)
+		notify.ShowNotification(notify.Notification{Title: "Scan failed", Message: err.Error(), OnActivate: openMenu})
 		return
 	}
 
@@ -180,7 +179,7 @@ func updateResults(results []string) {
 	if len(results) == 0 {
 		clearItem.Hide()
 		statusItem.SetTitle("No QR codes found")
-		notify.ShowNotification("Squrl", "No QR codes found on screen", openMenu)
+		notify.ShowNotification(notify.Notification{Title: "Squrl", Message: "No QR codes found on screen", OnActivate: openMenu})
 		return
 	}
 
@@ -201,7 +200,7 @@ func updateResults(results []string) {
 
 	summary := fmt.Sprintf("Found %d QR code(s)", len(results))
 	detail := strings.Join(results[:count], "\n")
-	notify.ShowNotification(summary, detail, openMenu)
+	notify.ShowNotification(notify.Notification{Title: summary, Message: detail, OnActivate: openMenu})
 }
 
 // clearResults hides all result slots and resets status.

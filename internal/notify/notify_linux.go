@@ -11,8 +11,8 @@ import (
 // Requires libnotify-bin (or equivalent) to be installed.
 // When onActivate is non-nil, the callback is invoked if the user clicks the
 // notification body (requires notify-send with --wait/--action support).
-func ShowNotification(title, message string, onActivate func()) {
-	if onActivate != nil {
+func ShowNotification(n Notification) {
+	if n.OnActivate != nil {
 		go func() {
 			iconPath, cleanup := writeIconTemp()
 			defer cleanup()
@@ -21,7 +21,7 @@ func ShowNotification(title, message string, onActivate func()) {
 			if iconPath != "" {
 				args = append(args, "--icon", iconPath)
 			}
-			args = append(args, title, message)
+			args = append(args, n.Title, n.Message)
 			cmd := exec.Command("notify-send", args...)
 			stdout, err := cmd.StdoutPipe()
 			if err != nil {
@@ -33,7 +33,7 @@ func ShowNotification(title, message string, onActivate func()) {
 			scanner := bufio.NewScanner(stdout)
 			for scanner.Scan() {
 				if scanner.Text() == "default" {
-					onActivate()
+					n.OnActivate()
 					break
 				}
 			}
@@ -45,7 +45,7 @@ func ShowNotification(title, message string, onActivate func()) {
 	iconPath, cleanup := writeIconTemp()
 	defer cleanup()
 
-	args := []string{title, message}
+	args := []string{n.Title, n.Message}
 	if iconPath != "" {
 		args = append([]string{"--icon", iconPath}, args...)
 	}
