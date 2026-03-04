@@ -4,6 +4,7 @@ package notify
 
 import (
 	"bufio"
+	"fmt"
 	"os/exec"
 )
 
@@ -12,12 +13,23 @@ import (
 // When onActivate is non-nil, the callback is invoked if the user clicks the
 // notification body (requires notify-send with --wait/--action support).
 func ShowNotification(n Notification) {
+	dur := n.Duration
+	if dur == 0 {
+		dur = DefaultDuration
+	}
+	// dur < 0 means indefinite; notify-send --expire-time 0 lets the server decide (no auto-dismiss)
+	var expireMs int64
+	if dur > 0 {
+		expireMs = dur.Milliseconds()
+	}
+	expireArg := fmt.Sprintf("%d", expireMs)
+
 	if n.OnActivate != nil {
 		go func() {
 			iconPath, cleanup := writeIconTemp()
 			defer cleanup()
 
-			args := []string{"--wait", "--action", "default=Open"}
+			args := []string{"--wait", "--action", "default=Open", "--expire-time", expireArg}
 			if iconPath != "" {
 				args = append(args, "--icon", iconPath)
 			}
@@ -45,9 +57,10 @@ func ShowNotification(n Notification) {
 	iconPath, cleanup := writeIconTemp()
 	defer cleanup()
 
-	args := []string{n.Title, n.Message}
+	args := []string{"--expire-time", expireArg}
 	if iconPath != "" {
-		args = append([]string{"--icon", iconPath}, args...)
+		args = append(args, "--icon", iconPath)
 	}
+	args = append(args, n.Title, n.Message)
 	_ = exec.Command("notify-send", args...).Run()
 }

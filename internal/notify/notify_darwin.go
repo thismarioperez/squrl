@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 )
 
 var (
@@ -44,6 +45,11 @@ func ShowNotification(n Notification) {
 		n.Message = n.Message[:197] + "..."
 	}
 
+	dur := n.Duration
+	if dur == 0 {
+		dur = DefaultDuration
+	}
+
 	if p := lookupAlerter(); p != "" {
 		go func() {
 			iconPath, cleanup := writeIconTemp()
@@ -57,6 +63,10 @@ func ShowNotification(n Notification) {
 			if iconPath != "" {
 				args = append(args, "--app-icon", iconPath)
 			}
+			if dur > 0 {
+				args = append(args, "--timeout", fmt.Sprintf("%d", int(dur/time.Second)))
+			}
+			// dur < 0 means indefinite: omit -timeout so alerter waits until dismissed
 			out, err := exec.Command(p, args...).Output()
 			if err == nil && strings.TrimSpace(string(out)) == "@CONTENTCLICKED" && n.OnActivate != nil {
 				n.OnActivate()
