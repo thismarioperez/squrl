@@ -24,41 +24,43 @@ Pre-built binaries are available on the [Releases](https://github.com/thismariop
 
 2. Extract the archive:
 
-   ```sh
-   tar -xzf squrl-<version>-darwin-arm64.tar.gz
-   ```
+    ```sh
+    tar -xzf squrl-<version>-darwin-arm64.tar.gz
+    ```
 
 3. Move the app to your Applications folder (optional but recommended):
 
-   ```sh
-   mv Squrl.app /Applications/
-   ```
+    ```sh
+    mv Squrl.app /Applications/
+    ```
 
 4. **Allow the app to open.**
    Because the app is not notarized, Gatekeeper will block it on first launch. Choose either method:
 
-   **Option A — System Settings (no Terminal required):**
-   - Try to open `Squrl.app`. macOS will show a "cannot be opened" alert — click **Done**.
-   - Open **System Settings → Privacy & Security**, scroll to the bottom, and click **Open Anyway** next to the Squrl message.
-   - Alternatively, right-click `Squrl.app` in Finder, choose **Open**, then click **Open** in the dialog.
+    **Option A — System Settings (no Terminal required):**
+    - Try to open `Squrl.app`. macOS will show a "cannot be opened" alert — click **Done**.
+    - Open **System Settings → Privacy & Security**, scroll to the bottom, and click **Open Anyway** next to the Squrl message.
+    - Alternatively, right-click `Squrl.app` in Finder, choose **Open**, then click **Open** in the dialog.
 
-   **Option B — Terminal:**
-   ```sh
-   xattr -dr com.apple.quarantine /Applications/Squrl.app
-   ```
-   Replace `/Applications/Squrl.app` with wherever you placed the bundle if you skipped step 3.
+    **Option B — Terminal:**
+
+    ```sh
+    xattr -dr com.apple.quarantine /Applications/Squrl.app
+    ```
+
+    Replace `/Applications/Squrl.app` with wherever you placed the bundle if you skipped step 3.
 
 5. Open the app:
 
-   ```sh
-   open /Applications/Squrl.app
-   ```
+    ```sh
+    open /Applications/Squrl.app
+    ```
 
-   On first launch, macOS will prompt you to grant **Screen Recording** permission. Approve it in:
+    On first launch, macOS will prompt you to grant **Screen Recording** permission. Approve it in:
 
-   > System Settings → Privacy & Security → Screen Recording
+    > System Settings → Privacy & Security → Screen Recording
 
-   Then click the QR icon in the menu bar and select **Scan Screen**.
+    Then click the QR icon in the menu bar and select **Scan Screen**.
 
 ---
 
@@ -75,25 +77,25 @@ Pre-built binaries are available on the [Releases](https://github.com/thismariop
 - Xcode Command Line Tools: `xcode-select --install`
 - [alerter v26.5](https://github.com/vjeantet/alerter/releases/tag/v26.5) _(optional)_ — enables click-to-focus on desktop notifications. Install the pinned version to match CI:
 
-  ```sh
-  curl -fsSL https://github.com/vjeantet/alerter/releases/download/v26.5/alerter-26.5.zip -o /tmp/alerter.zip
-  echo "11f63cddc9bb3f8554ed9b762632a120cfa7bee05e3c09d65734823e09d24f10  /tmp/alerter.zip" | shasum -a 256 --check
-  unzip -q /tmp/alerter.zip -d /tmp/alerter-bin
-  sudo mv /tmp/alerter-bin/alerter /usr/local/bin/alerter
-  ```
+    ```sh
+    curl -fsSL https://github.com/vjeantet/alerter/releases/download/v26.5/alerter-26.5.zip -o /tmp/alerter.zip
+    echo "11f63cddc9bb3f8554ed9b762632a120cfa7bee05e3c09d65734823e09d24f10  /tmp/alerter.zip" | shasum -a 256 --check
+    unzip -q /tmp/alerter.zip -d /tmp/alerter-bin
+    sudo mv /tmp/alerter-bin/alerter /usr/local/bin/alerter
+    ```
 
-  When building a `.app` bundle (`mise run bundle`), alerter is automatically copied into the bundle if found in PATH — no separate install needed on end-user machines. When running the binary directly during development, alerter must be on your PATH for click detection to work.
+    When building a `.app` bundle (`mise run bundle`), alerter is automatically copied into the bundle if found in PATH — no separate install needed on end-user machines. When running the binary directly during development, alerter must be on your PATH for click detection to work.
 
 ### Linux
 
 The following system packages are required. Run `mise run check-deps` to verify they are present, or `mise run run` / `mise run build` will check automatically.
 
-| Package | apt | Purpose |
-|---------|-----|---------|
-| pkg-config | `pkg-config` | Locates C libraries at compile time |
-| ayatana-appindicator3 | `libayatana-appindicator3-dev` | System tray (compile-time CGO dep) |
-| notify-send | `libnotify-bin` | Desktop notifications (runtime) |
-| xclip or xsel | `xclip` / `xsel` | Clipboard support (runtime) |
+| Package               | apt                            | Purpose                             |
+| --------------------- | ------------------------------ | ----------------------------------- |
+| pkg-config            | `pkg-config`                   | Locates C libraries at compile time |
+| ayatana-appindicator3 | `libayatana-appindicator3-dev` | System tray (compile-time CGO dep)  |
+| notify-send           | `libnotify-bin`                | Desktop notifications (runtime)     |
+| xclip or xsel         | `xclip` / `xsel`               | Clipboard support (runtime)         |
 
 Install all at once:
 
@@ -162,16 +164,16 @@ On macOS, when running outside of a `.app` bundle, the Screen Recording permissi
 
 All tasks are defined in `mise.toml` and run via `mise run <task>`.
 
-| Task                     | Description                                                   |
-| ------------------------ | ------------------------------------------------------------- |
-| `mise run build`         | Compile binary to `bin/squrl`. Extra args forwarded to `go build` (e.g. `-race`) |
-| `mise run bundle`        | Clean then build `Squrl.app` bundle (macOS). Pass `debug` for a debug build (no optimisations) |
-| `mise run start`         | Run directly without bundling (`SQURL_DEBUG=1`). **Primary debug method on Linux.** Extra args forwarded to `go run` |
-| `mise run start-macos`   | Build dev bundle and run `Squrl.app` directly (macOS, `SQURL_DEBUG=1`) |
-| `mise run debug-macos`   | Build debug bundle (no optimisations) and launch `dlv exec` (macOS) |
-| `mise run test`          | Run all tests. Extra args forwarded to `go test` (e.g. `-run TestFoo -v`) |
-| `mise run tidy`          | Tidy Go module dependencies                                   |
-| `mise run clean`         | Remove `bin/` and `Squrl.app`                                 |
+| Task                   | Description                                                                                                          |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `mise run build`       | Compile binary to `bin/squrl`. Extra args forwarded to `go build` (e.g. `-race`)                                     |
+| `mise run bundle`      | Clean then build `Squrl.app` bundle (macOS). Pass `debug` for a debug build (no optimisations)                       |
+| `mise run start`       | Run directly without bundling (`SQURL_DEBUG=1`). **Primary debug method on Linux.** Extra args forwarded to `go run` |
+| `mise run start-macos` | Build dev bundle and run `Squrl.app` directly (macOS, `SQURL_DEBUG=1`)                                               |
+| `mise run debug-macos` | Build debug bundle (no optimisations) and launch `dlv exec` (macOS)                                                  |
+| `mise run test`        | Run all tests. Extra args forwarded to `go test` (e.g. `-run TestFoo -v`)                                            |
+| `mise run tidy`        | Tidy Go module dependencies                                                                                          |
+| `mise run clean`       | Remove `bin/` and `Squrl.app`                                                                                        |
 
 ## Debugging
 
@@ -179,11 +181,11 @@ All tasks are defined in `mise.toml` and run via `mise run <task>`.
 
 Log file locations:
 
-| Platform | Path |
-| -------- | ---- |
+| Platform | Path                             |
+| -------- | -------------------------------- |
 | macOS    | `~/Library/Logs/squrl/squrl.log` |
 | Linux    | `~/.local/share/squrl/squrl.log` |
-| Windows  | `%APPDATA%\squrl\squrl.log` |
+| Windows  | `%APPDATA%\squrl\squrl.log`      |
 
 The log captures: display count, per-display capture errors, QR decode results, scan errors, notification dispatch, alerter path resolution, and clipboard failures.
 
@@ -250,11 +252,11 @@ To revoke or re-grant permission: **System Settings → Privacy & Security → S
 
 Icons are generated from SVG sources using `rsvg-convert` (from [librsvg](https://wiki.gnome.org/Projects/LibRsvg)) and the built-in `iconutil`.
 
-| Source | Output | Purpose |
-| --- | --- | --- |
-| `assets/icon.svg` | `assets/AppIcon.icns` | macOS `.app` bundle icon |
-| `assets/menubar.svg` | `assets/menubar_22.png`, `assets/menubar_44.png` | Menu bar template icon (1x and 2x/Retina) |
-| `assets/notification.svg` | `assets/notification_64.png` | Desktop notification icon (64×64, all platforms) |
+| Source                    | Output                                           | Purpose                                          |
+| ------------------------- | ------------------------------------------------ | ------------------------------------------------ |
+| `assets/icon.svg`         | `assets/AppIcon.icns`                            | macOS `.app` bundle icon                         |
+| `assets/menubar.svg`      | `assets/menubar_22.png`, `assets/menubar_44.png` | Menu bar template icon (1x and 2x/Retina)        |
+| `assets/notification.svg` | `assets/notification_64.png`                     | Desktop notification icon (64×64, all platforms) |
 
 Install the dependency if you don't have it:
 
@@ -323,3 +325,7 @@ squrl/
 | [`kbinani/screenshot`](https://github.com/kbinani/screenshot) | Cross-platform screen capture (macOS, Linux/X11, Windows)        |
 | [`atotto/clipboard`](https://github.com/atotto/clipboard)     | Cross-platform clipboard write (macOS, Linux, Windows)           |
 | [`makiuchi-d/gozxing`](https://github.com/makiuchi-d/gozxing) | QR code decoding (pure Go ZXing port)                            |
+
+## License
+
+Squrl is released under the [MIT License](LICENSE).
