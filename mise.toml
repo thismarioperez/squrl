@@ -23,6 +23,11 @@ description = "Build the macOS .app bundle (Squrl.app) — macOS only. Pass 'deb
 depends = ["clean"]
 run = "scripts/build-app.sh $@"
 
+[tasks.install-bundle]
+description = "Install the macOS .app bundle (Squrl.app) — macOS only"
+depends = ["bundle"]
+run = "scripts/install-bundle.sh"
+
 [tasks.start]
 description = "Run the app directly (development). Extra args are forwarded to go run."
 depends = ["check-deps"]
@@ -33,13 +38,13 @@ run = "go run ./cmd/squrl/ $@"
 description = "Run the app on macOS (development) — builds a dev .app bundle so the menu bar icon appears"
 depends = ["check-deps"]
 env = { "SQURL_DEBUG" = "1" }
-run = "mise run bundle && Squrl.app/Contents/MacOS/squrl $@"
+run = "mise run bundle && bin/Squrl.app/Contents/MacOS/squrl $@"
 
 [tasks.debug-macos]
 description = "Run under Delve on macOS — builds a dev .app bundle with debug symbols then launches dlv exec"
 depends = ["check-deps"]
 env = { "SQURL_DEBUG" = "1" }
-run = "mise run bundle debug && dlv exec Squrl.app/Contents/MacOS/squrl"
+run = "mise run bundle debug && dlv exec bin/Squrl.app/Contents/MacOS/squrl"
 
 [tasks.test]
 description = "Run all tests. Extra args are forwarded to go test (e.g. -run TestFoo -v)."
@@ -50,8 +55,8 @@ description = "Tidy go modules"
 run = "go mod tidy"
 
 [tasks.clean]
-description = "Remove build artefacts"
-run = "rm -rf bin/ 'Squrl.app'"
+description = "Remove build artifacts"
+run = "rm -rf bin/"
 
 [tasks.release]
 description = "Take a release build. Extra args are forwarded to ./scripts/release.sh"

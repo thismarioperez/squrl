@@ -9,7 +9,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 APP_NAME="Squrl"
-APP_DIR="$REPO_ROOT/$APP_NAME.app"
+APP_DIR="$REPO_ROOT/bin/$APP_NAME.app"
 BINARY_NAME="squrl"
 MODE="${1:-}"
 
