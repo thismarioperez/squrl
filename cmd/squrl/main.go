@@ -27,9 +27,10 @@ func main() {
 
 	opts, err := cli.ParseScanArgs(os.Args[1:])
 	if err != nil {
-		if !errors.Is(err, flag.ErrHelp) {
-			fmt.Fprintf(os.Stderr, "squrl: %v\n", err)
+		if errors.Is(err, flag.ErrHelp) {
+			os.Exit(0)
 		}
+		fmt.Fprintf(os.Stderr, "squrl: %v\n", err)
 		os.Exit(2)
 	}
 

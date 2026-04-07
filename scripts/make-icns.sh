@@ -57,6 +57,7 @@ CLI_SVG="$REPO_ROOT/assets/cli.svg"
 CLI_ANSI="$REPO_ROOT/assets/cli_ansi.txt"
 CLI_PNG_FULL=$(mktemp)
 CLI_PNG=$(mktemp)
+trap 'rm -f "$CLI_PNG_FULL" "$CLI_PNG"' EXIT
 rsvg-convert -w 512 -h 512 "$CLI_SVG" -o "$CLI_PNG_FULL"
 magick "$CLI_PNG_FULL" -sample 16x16 "PNG32:$CLI_PNG"
 python3 "$SCRIPT_DIR/gen-cli-icon.py" "$CLI_PNG" > "$CLI_ANSI"
