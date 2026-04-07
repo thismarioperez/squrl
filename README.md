@@ -220,7 +220,7 @@ Two VS Code launch configurations are provided in `.vscode/launch.json`, backed 
 To pre-build the debug bundle from the terminal and then attach VS Code:
 
 ```sh
-# Build the debug bundle (no optimisations) and drop into a dlv REPL
+# Build the debug bundle (no optimizations) and drop into a dlv REPL
 mise run debug-macos
 
 # — or just build without launching dlv, then use VS Code to attach —
