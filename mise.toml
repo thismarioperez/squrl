@@ -10,19 +10,19 @@ description = "Verify required system dependencies are installed (Linux only)"
 run = "scripts/check-deps-linux.sh"
 
 [tasks.build]
-description = "Build the binary to bin/squrl. Extra args are forwarded to go build."
+description = "Build the CLI binary to bin/squrl. Extra args are forwarded to go build."
 depends = ["check-deps"]
 run = "go build -ldflags \"-X main.version=dev\" -o bin/squrl ./cmd/squrl/ $@"
 
-[tasks.build-cli]
-description = "Build the CLI binary to bin/squrl-cli. Extra args are forwarded to go build."
+[tasks.build-tray]
+description = "Build the tray binary to bin/squrl-tray. Extra args are forwarded to go build."
 depends = ["check-deps"]
-run = "go build -ldflags \"-X main.version=dev\" -o bin/squrl-cli ./cmd/squrl-cli/ $@"
+run = "go build -ldflags \"-X main.version=dev\" -o bin/squrl-tray ./cmd/squrl-tray/ $@"
 
-[tasks.build-debug]
-description = "Build the binary with debug symbols (no optimisations) to bin/squrl — Linux debug attach target"
+[tasks.build-tray-debug]
+description = "Build the tray binary with debug symbols (no optimisations) to bin/squrl-tray — Linux debug attach target"
 depends = ["check-deps"]
-run = "go build -gcflags \"all=-N -l\" -ldflags \"-X main.version=dev\" -o bin/squrl ./cmd/squrl/"
+run = "go build -gcflags \"all=-N -l\" -ldflags \"-X main.version=dev\" -o bin/squrl-tray ./cmd/squrl-tray/"
 
 [tasks.bundle]
 description = "Build the macOS .app bundle (Squrl.app) — macOS only. Pass 'debug' to build with debug symbols."
@@ -35,28 +35,28 @@ depends = ["bundle"]
 run = "scripts/install-bundle.sh"
 
 [tasks.start]
-description = "Run the app directly (development). Extra args are forwarded to go run."
-depends = ["check-deps"]
-env = { "SQURL_DEBUG" = "1" }
-run = "go run ./cmd/squrl/ $@"
-
-[tasks.start-cli]
 description = "Run the CLI directly without building (SQURL_DEBUG=1). Extra args forwarded to go run."
 depends = ["check-deps"]
 env = { SQURL_DEBUG = "1" }
-run = "go run ./cmd/squrl-cli/ $@"
+run = "go run ./cmd/squrl/ $@"
+
+[tasks.start-tray]
+description = "Run the app directly (development). Extra args are forwarded to go run."
+depends = ["check-deps"]
+env = { "SQURL_DEBUG" = "1" }
+run = "go run ./cmd/squrl-tray/ $@"
 
 [tasks.start-macos]
 description = "Run the app on macOS (development) — builds a dev .app bundle so the menu bar icon appears"
 depends = ["check-deps"]
 env = { "SQURL_DEBUG" = "1" }
-run = "mise run bundle && bin/Squrl.app/Contents/MacOS/squrl $@"
+run = "mise run bundle && bin/Squrl.app/Contents/MacOS/squrl-tray $@"
 
 [tasks.debug-macos]
 description = "Run under Delve on macOS — builds a dev .app bundle with debug symbols then launches dlv exec"
 depends = ["check-deps"]
 env = { "SQURL_DEBUG" = "1" }
-run = "mise run bundle debug && dlv exec bin/Squrl.app/Contents/MacOS/squrl"
+run = "mise run bundle debug && dlv exec bin/Squrl.app/Contents/MacOS/squrl-tray"
 
 [tasks.test]
 description = "Run all tests. Extra args are forwarded to go test (e.g. -run TestFoo -v)."

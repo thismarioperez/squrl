@@ -10,7 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 APP_NAME="Squrl"
 APP_DIR="$REPO_ROOT/bin/$APP_NAME.app"
-BINARY_NAME="squrl"
+BINARY_NAME="squrl-tray"
 MODE="${1:-}"
 
 echo "Building $APP_NAME.app..."
@@ -19,9 +19,9 @@ echo "Building $APP_NAME.app..."
 cd "$REPO_ROOT"
 LDFLAGS="${LDFLAGS:--X main.version=dev}"
 if [[ "$MODE" == "debug" ]]; then
-  CGO_ENABLED=1 go build -gcflags "all=-N -l" -ldflags "$LDFLAGS" -o "bin/$BINARY_NAME" ./cmd/squrl/
+  CGO_ENABLED=1 go build -gcflags "all=-N -l" -ldflags "$LDFLAGS" -o "bin/$BINARY_NAME" ./cmd/squrl-tray/
 else
-  CGO_ENABLED=1 go build -ldflags "$LDFLAGS" -o "bin/$BINARY_NAME" ./cmd/squrl/
+  CGO_ENABLED=1 go build -ldflags "$LDFLAGS" -o "bin/$BINARY_NAME" ./cmd/squrl-tray/
 fi
 
 # 2. Create bundle structure.
