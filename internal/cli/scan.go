@@ -10,6 +10,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/thismarioperez/squrl/assets"
 	"github.com/thismarioperez/squrl/internal/scanner"
 )
 
@@ -37,6 +38,8 @@ func ParseScanArgs(args []string) (ScanOptions, error) {
 // Returns 0 if results found, 1 if no QR codes found, 2 on error or cancellation.
 func Scan(ctx context.Context, opts ScanOptions) int {
 	slog.Debug("cli scan started", "delay", opts.Delay)
+
+	fmt.Fprintf(os.Stderr, "%s", assets.CLIIcon())
 
 	if opts.Delay > 0 {
 		if err := countdown(ctx, opts.Delay, os.Stderr); err != nil {

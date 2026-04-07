@@ -49,3 +49,16 @@ echo "Created: assets/menubar_22.png, assets/menubar_44.png"
 NOTIF_SVG="$REPO_ROOT/assets/notification.svg"
 rsvg-convert -w 64 -h 64 "$NOTIF_SVG" -o "$REPO_ROOT/assets/notification_64.png"
 echo "Created: assets/notification_64.png"
+
+# Render CLI ANSI icon from cli.svg.
+# Renders at native resolution then nearest-neighbour samples to 32×32 so
+# each SVG pixel maps 1-to-1 to a terminal half-block without any blending.
+CLI_SVG="$REPO_ROOT/assets/cli.svg"
+CLI_ANSI="$REPO_ROOT/assets/cli_ansi.txt"
+CLI_PNG_FULL=$(mktemp)
+CLI_PNG=$(mktemp)
+rsvg-convert -w 512 -h 512 "$CLI_SVG" -o "$CLI_PNG_FULL"
+magick "$CLI_PNG_FULL" -sample 16x16 "PNG32:$CLI_PNG"
+python3 "$SCRIPT_DIR/gen-cli-icon.py" "$CLI_PNG" > "$CLI_ANSI"
+rm "$CLI_PNG_FULL" "$CLI_PNG"
+echo "Created: assets/cli_ansi.txt"
