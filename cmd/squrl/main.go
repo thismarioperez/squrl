@@ -1,12 +1,16 @@
 package main
 
 import (
+	"context"
+	"errors"
+	"flag"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
-	"github.com/getlantern/systray"
+	"github.com/thismarioperez/squrl/internal/cli"
 	"github.com/thismarioperez/squrl/internal/logging"
-	"github.com/thismarioperez/squrl/internal/tray"
 )
 
 // version is set at build time via -ldflags "-X main.version=vX.Y.Z".
@@ -21,9 +25,17 @@ func main() {
 	cleanup := logging.Init()
 	defer cleanup()
 
-	tray.SetVersion(version)
+	opts, err := cli.ParseScanArgs(os.Args[1:])
+	if err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			os.Exit(0)
+		}
+		fmt.Fprintf(os.Stderr, "squrl: %v\n", err)
+		os.Exit(2)
+	}
 
-	// systray.Run must be called from main() on macOS — it takes ownership of the
-	// Cocoa main thread and runs the AppKit event loop until Quit is triggered.
-	systray.Run(tray.OnReady, tray.OnExit)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	os.Exit(cli.Scan(ctx, opts))
 }
