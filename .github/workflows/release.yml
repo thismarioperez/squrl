@@ -37,7 +37,7 @@ jobs:
         run: bash scripts/build-app.sh
 
       - name: Package
-        run: tar -czf squrl-${{ github.ref_name }}-darwin-arm64.tar.gz Squrl.app
+        run: tar -czf squrl-${{ github.ref_name }}-darwin-arm64.tar.gz -C bin Squrl.app
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
