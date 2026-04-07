@@ -30,14 +30,20 @@ A cross-platform tool that scans all connected displays for visible QR codes. It
 
 Pre-built binaries are available on the [Releases](https://github.com/thismarioperez/squrl/releases) page.
 
+Each release ships two artifacts per platform — one for the tray app (`squrl-tray`) and one for the CLI (`squrl`).
+
+---
+
 ### macOS (Apple Silicon)
 
-1. Download `squrl-<version>-darwin-arm64.tar.gz` from the release assets.
+#### Tray app (`squrl-tray`)
+
+1. Download `squrl-tray-<version>-darwin-arm64.tar.gz` from the release assets.
 
 2. Extract the archive:
 
     ```sh
-    tar -xzf squrl-<version>-darwin-arm64.tar.gz
+    tar -xzf squrl-tray-<version>-darwin-arm64.tar.gz
     ```
 
 3. Move the app to your Applications folder (optional but recommended):
@@ -73,6 +79,92 @@ Pre-built binaries are available on the [Releases](https://github.com/thismariop
     > System Settings → Privacy & Security → Screen Recording
 
     Then click the QR icon in the menu bar and select **Scan Screen**.
+
+#### CLI (`squrl`)
+
+1. Download `squrl-<version>-darwin-arm64.tar.gz` from the release assets.
+
+2. Extract and install:
+
+    ```sh
+    tar -xzf squrl-<version>-darwin-arm64.tar.gz
+    chmod +x squrl
+    sudo mv squrl /usr/local/bin/
+    ```
+
+3. Remove the quarantine attribute so macOS allows it to run:
+
+    ```sh
+    xattr -d com.apple.quarantine /usr/local/bin/squrl
+    ```
+
+4. Run:
+
+    ```sh
+    squrl --help
+    ```
+
+---
+
+### Linux (x86-64)
+
+#### Tray app (`squrl-tray`)
+
+1. Install runtime dependencies:
+
+    ```sh
+    sudo apt-get install -y libayatana-appindicator3-1 libnotify-bin xclip
+    ```
+
+2. Download `squrl-tray-<version>-linux-amd64.tar.gz` from the release assets.
+
+3. Extract and install:
+
+    ```sh
+    tar -xzf squrl-tray-<version>-linux-amd64.tar.gz
+    chmod +x squrl-tray
+    sudo mv squrl-tray /usr/local/bin/
+    ```
+
+4. Run (requires an X11 display):
+
+    ```sh
+    squrl-tray
+    ```
+
+#### CLI (`squrl`)
+
+1. Download `squrl-<version>-linux-amd64.tar.gz` from the release assets.
+
+2. Extract and install:
+
+    ```sh
+    tar -xzf squrl-<version>-linux-amd64.tar.gz
+    chmod +x squrl
+    sudo mv squrl /usr/local/bin/
+    ```
+
+3. Run:
+
+    ```sh
+    squrl --help
+    ```
+
+---
+
+### Windows (x86-64)
+
+#### Tray app (`squrl-tray`)
+
+1. Download `squrl-tray-<version>-windows-amd64.zip` from the release assets.
+2. Extract the ZIP.
+3. Run `squrl-tray.exe`.
+
+#### CLI (`squrl`)
+
+1. Download `squrl-<version>-windows-amd64.zip` from the release assets.
+2. Extract the ZIP.
+3. Run `squrl.exe` (or add its directory to your `PATH`).
 
 ---
 
@@ -326,6 +418,8 @@ squrl/
 ├── cmd/squrl/main.go             # CLI entry point (squrl binary)
 ├── cmd/squrl-tray/main.go        # Tray app entry point (squrl-tray binary)
 ├── internal/
+│   ├── cli/
+│   │   └── scan.go               # CLI argument parsing and scan logic
 │   ├── logging/
 │   │   └── logging.go            # Structured logging (slog); enable via SQURL_DEBUG=1
 │   ├── notify/
@@ -344,6 +438,9 @@ squrl/
 │       ├── tray.go               # System tray UI
 │       └── tray_test.go
 ├── assets/
+│   ├── cli.go                    # Embeds CLI ANSI icon
+│   ├── cli.svg                   # CLI icon source
+│   ├── cli_ansi.txt              # CLI icon rendered as ANSI escape sequences (generated)
 │   ├── icon.go                   # Embeds menubar and notification PNG icons
 │   ├── icon.svg                  # App bundle icon source (squirrel)
 │   ├── menubar.svg               # Menu bar icon source
@@ -354,8 +451,11 @@ squrl/
 │   └── AppIcon.icns              # Generated macOS bundle icon
 ├── scripts/
 │   ├── build-app.sh              # macOS .app bundle build script
+│   ├── check-deps-linux.sh       # Verify required Linux runtime dependencies
+│   ├── gen-cli-icon.py           # Generate CLI ANSI icon from SVG source
+│   ├── install-bundle.sh         # Install Squrl.app to /Applications (macOS)
 │   ├── make-icns.sh              # SVG → .icns + menubar PNGs
-│   └── release.sh                # Release build script
+│   └── release.sh                # Version bump and release tag script
 ├── .vscode/
 │   ├── launch.json               # VS Code delve debug launch configurations (macOS only)
 │   └── tasks.json                # VS Code mise-backed tasks (build, bundle, bundle debug, test, clean)
