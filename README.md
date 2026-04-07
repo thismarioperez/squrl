@@ -4,9 +4,21 @@
 
 > DISCLAIMER: This is a heavily vibe-coded project created out of curiosity and necessity.
 
-A cross-platform system tray utility that scans all connected displays for visible QR codes and copies their content to your clipboard.
+A cross-platform tool that scans all connected displays for visible QR codes. It ships as two binaries:
+
+- **`squrl`** — CLI tool: scans screens and prints decoded QR codes to stdout (one per line)
+- **`squrl-tray`** — system tray app: sits in the menu bar, decodes QR codes on demand, and copies results to the clipboard
 
 ## Features
+
+### CLI (`squrl`)
+
+- Scans all connected displays simultaneously
+- Prints each decoded QR code to stdout (one per line)
+- Optional countdown before scanning (`--delay`, default 3 s)
+- Exit codes: `0` = results found, `1` = no QR codes, `2` = error/cancelled
+
+### Tray (`squrl-tray`)
 
 - Sits in the system tray — no Dock icon (macOS) or taskbar window
 - Scans all connected displays simultaneously
@@ -123,13 +135,33 @@ mise install
 
 ## Running
 
-### Option A — Build a `.app` bundle (macOS recommended)
+### CLI (`squrl`)
 
-This is the standard way to run the app on macOS. macOS grants Screen Recording permission to the `.app` bundle, so the permission prompt appears automatically on first scan.
+Run the CLI directly from a terminal — no bundling needed:
+
+```sh
+mise run start           # run with SQURL_DEBUG=1 (default 3 s countdown)
+mise run start -- --delay 0  # scan immediately, no countdown
+```
+
+Or build and run the binary:
+
+```sh
+mise run build
+./bin/squrl --help
+./bin/squrl              # scan with default 3 s countdown
+./bin/squrl --delay 0    # scan immediately
+```
+
+### Tray app (`squrl-tray`)
+
+#### Option A — Build a `.app` bundle (macOS recommended)
+
+This is the standard way to run the tray app on macOS. macOS grants Screen Recording permission to the `.app` bundle, so the permission prompt appears automatically on first scan.
 
 ```sh
 mise run bundle
-open "Squrl.app"
+open "bin/Squrl.app"
 ```
 
 On first launch, macOS will prompt you to grant **Screen Recording** permission. Approve it in:
@@ -138,7 +170,7 @@ On first launch, macOS will prompt you to grant **Screen Recording** permission.
 
 Then click the QR icon in the menu bar and select **Scan Screen**.
 
-### Option B — Build a dev bundle and run (macOS development)
+#### Option B — Build a dev bundle and run (macOS development)
 
 Builds a `.app` bundle with `SQURL_DEBUG=1` and runs the binary directly (no separate `open` needed). Screen Recording permission is attached to `Squrl.app`, same as Option A.
 
@@ -146,16 +178,16 @@ Builds a `.app` bundle with `SQURL_DEBUG=1` and runs the binary directly (no sep
 mise run start-macos
 ```
 
-### Option C — Run directly (Linux / all platforms)
+#### Option C — Run directly (Linux / all platforms)
 
 This is the **recommended development workflow on Linux**. It also works on macOS and Windows for quick runs without bundling.
 
-**VS Code:** open the Command Palette → **Tasks: Run Task** → **`mise: start`**. This is set as the default run task. Output (including debug logs) appears in the Terminal panel.
+**VS Code:** open the Command Palette → **Tasks: Run Task** → **`mise: start-tray`**. Output (including debug logs) appears in the Terminal panel.
 
 **Terminal:**
 
 ```sh
-mise run start
+mise run start-tray
 ```
 
 On macOS, when running outside of a `.app` bundle, the Screen Recording permission may be attached to **Terminal** (or your IDE) instead of the app itself.
@@ -164,16 +196,19 @@ On macOS, when running outside of a `.app` bundle, the Screen Recording permissi
 
 All tasks are defined in `mise.toml` and run via `mise run <task>`.
 
-| Task                   | Description                                                                                                          |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `mise run build`       | Compile binary to `bin/squrl`. Extra args forwarded to `go build` (e.g. `-race`)                                     |
-| `mise run bundle`      | Clean then build `Squrl.app` bundle (macOS). Pass `debug` for a debug build (no optimisations)                       |
-| `mise run start`       | Run directly without bundling (`SQURL_DEBUG=1`). **Primary debug method on Linux.** Extra args forwarded to `go run` |
-| `mise run start-macos` | Build dev bundle and run `Squrl.app` directly (macOS, `SQURL_DEBUG=1`)                                               |
-| `mise run debug-macos` | Build debug bundle (no optimisations) and launch `dlv exec` (macOS)                                                  |
-| `mise run test`        | Run all tests. Extra args forwarded to `go test` (e.g. `-run TestFoo -v`)                                            |
-| `mise run tidy`        | Tidy Go module dependencies                                                                                          |
-| `mise run clean`       | Remove `bin/` and `Squrl.app`                                                                                        |
+| Task                      | Description                                                                                                           |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `mise run build`          | Compile CLI binary to `bin/squrl`. Extra args forwarded to `go build` (e.g. `-race`)                                  |
+| `mise run build-tray`     | Compile tray binary to `bin/squrl-tray`. Extra args forwarded to `go build`                                           |
+| `mise run build-tray-debug` | Compile tray binary with debug symbols (no optimisations) to `bin/squrl-tray`                                       |
+| `mise run bundle`         | Build `Squrl.app` bundle (macOS, tray app). Pass `debug` for a debug build (no optimisations)                         |
+| `mise run start`          | Run CLI directly without building (`SQURL_DEBUG=1`). Extra args forwarded to `go run`                                 |
+| `mise run start-tray`     | Run tray app directly without building (`SQURL_DEBUG=1`). **Primary debug method on Linux.** Extra args forwarded to `go run` |
+| `mise run start-macos`    | Build dev bundle and run `Squrl.app` directly (macOS, `SQURL_DEBUG=1`)                                                |
+| `mise run debug-macos`    | Build debug bundle (no optimisations) and launch `dlv exec` (macOS)                                                   |
+| `mise run test`           | Run all tests. Extra args forwarded to `go test` (e.g. `-run TestFoo -v`)                                             |
+| `mise run tidy`           | Tidy Go module dependencies                                                                                           |
+| `mise run clean`          | Remove `bin/`                                                                                                         |
 
 ## Debugging
 
@@ -191,14 +226,14 @@ The log captures: display count, per-display capture errors, QR decode results, 
 
 ### Linux
 
-The recommended development workflow on Linux is the **`mise: start`** VS Code task, or equivalently `mise run start` in a terminal. It runs the app directly via `go run` with `SQURL_DEBUG=1` — no binary to build and no debugger to attach. Logs stream live to the terminal output.
+The recommended development workflow on Linux is the **`mise: start-tray`** VS Code task, or equivalently `mise run start-tray` in a terminal. It runs the tray app directly via `go run` with `SQURL_DEBUG=1` — no binary to build and no debugger to attach. Logs stream live to the terminal output.
 
-**VS Code:** open the Command Palette → **Tasks: Run Task** → **`mise: start`**. Output (including debug logs) appears in the Terminal panel.
+**VS Code:** open the Command Palette → **Tasks: Run Task** → **`mise: start-tray`**. Output (including debug logs) appears in the Terminal panel.
 
 **Terminal:**
 
 ```sh
-mise run start
+mise run start-tray
 ```
 
 To tail the log file separately (e.g. to keep it visible while the app is backgrounded):
@@ -213,9 +248,9 @@ tail -f ~/.local/share/squrl/squrl.log
 
 Two VS Code launch configurations are provided in `.vscode/launch.json`, backed by build tasks in `.vscode/tasks.json`:
 
-**Debug squrl (macOS)** — runs the `mise: bundle debug` preLaunchTask (`mise run bundle debug`, builds with `-gcflags "all=-N -l"`, no optimisations), then attaches delve to `Squrl.app/Contents/MacOS/squrl` with `SQURL_DEBUG=1`. Use this for day-to-day breakpoint debugging.
+**Debug squrl (macOS)** — runs the `mise: bundle debug` preLaunchTask (`mise run bundle debug`, builds with `-gcflags "all=-N -l"`, no optimisations), then attaches delve to `Squrl.app/Contents/MacOS/squrl-tray` with `SQURL_DEBUG=1`. Use this for day-to-day breakpoint debugging.
 
-**Debug squrl (macOS, pre-built)** — attaches delve to an already-built `Squrl.app/Contents/MacOS/squrl` with `SQURL_DEBUG=1`, skipping the build step. Use this when the bundle is already present.
+**Debug squrl (macOS, pre-built)** — attaches delve to an already-built `Squrl.app/Contents/MacOS/squrl-tray` with `SQURL_DEBUG=1`, skipping the build step. Use this when the bundle is already present.
 
 To pre-build the debug bundle from the terminal and then attach VS Code:
 
@@ -228,9 +263,21 @@ mise run bundle debug
 # Launch via VS Code: Run & Debug → "Debug squrl (macOS, pre-built)"
 ```
 
-> **macOS note:** Screen Recording permission is tied to the binary path. Both configs target `Squrl.app/Contents/MacOS/squrl`, so macOS prompts once for that path and remembers it across rebuilds.
+> **macOS note:** Screen Recording permission is tied to the binary path. Both configs target `Squrl.app/Contents/MacOS/squrl-tray`, so macOS prompts once for that path and remembers it across rebuilds.
 
 ## Usage
+
+### CLI (`squrl`)
+
+```
+squrl [--delay|-D seconds]
+```
+
+Scans all screens and prints each decoded QR code to stdout (one per line). Status and errors go to stderr. Pipe or redirect stdout to use the results in scripts.
+
+Exit codes: `0` = at least one QR code found, `1` = none found, `2` = error or cancelled.
+
+### Tray app (`squrl-tray`)
 
 1. Launch the app (see above).
 2. Click the QR icon in the system tray.
@@ -276,7 +323,8 @@ The generated files are committed to the repository so a rebuild is only needed 
 
 ```
 squrl/
-├── cmd/squrl/main.go             # Entry point
+├── cmd/squrl/main.go             # CLI entry point (squrl binary)
+├── cmd/squrl-tray/main.go        # Tray app entry point (squrl-tray binary)
 ├── internal/
 │   ├── logging/
 │   │   └── logging.go            # Structured logging (slog); enable via SQURL_DEBUG=1
