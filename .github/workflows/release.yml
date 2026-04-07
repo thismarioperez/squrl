@@ -36,14 +36,30 @@ jobs:
           LDFLAGS: "-X main.version=${{ github.ref_name }}"
         run: bash scripts/build-app.sh
 
-      - name: Package
+      - name: Build CLI binary
+        run: |
+          CGO_ENABLED=1 go build \
+            -ldflags "-X main.version=${{ github.ref_name }}" \
+            -o bin/squrl-cli \
+            ./cmd/squrl-cli/
+
+      - name: Package app
         run: tar -czf squrl-${{ github.ref_name }}-darwin-arm64.tar.gz -C bin Squrl.app
 
-      - name: Upload artifact
+      - name: Package CLI
+        run: tar -czf squrl-cli-${{ github.ref_name }}-darwin-arm64.tar.gz -C bin squrl-cli
+
+      - name: Upload app artifact
         uses: actions/upload-artifact@v4
         with:
           name: darwin-arm64
           path: squrl-${{ github.ref_name }}-darwin-arm64.tar.gz
+
+      - name: Upload CLI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: darwin-arm64-cli
+          path: squrl-cli-${{ github.ref_name }}-darwin-arm64.tar.gz
 
   build-linux:
     name: Build (Linux)
@@ -74,14 +90,30 @@ jobs:
             -o squrl \
             ./cmd/squrl/
 
+      - name: Build CLI binary
+        run: |
+          CGO_ENABLED=1 go build \
+            -ldflags "-X main.version=${{ github.ref_name }}" \
+            -o squrl-cli \
+            ./cmd/squrl-cli/
+
       - name: Package
         run: tar -czf squrl-${{ github.ref_name }}-linux-amd64.tar.gz squrl
+
+      - name: Package CLI
+        run: tar -czf squrl-cli-${{ github.ref_name }}-linux-amd64.tar.gz squrl-cli
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: linux-amd64
           path: squrl-${{ github.ref_name }}-linux-amd64.tar.gz
+
+      - name: Upload CLI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-amd64-cli
+          path: squrl-cli-${{ github.ref_name }}-linux-amd64.tar.gz
 
   build-windows:
     name: Build (Windows)
@@ -104,14 +136,32 @@ jobs:
         env:
           CGO_ENABLED: "1"
 
+      - name: Build CLI binary
+        run: |
+          go build `
+            -ldflags "-X main.version=${{ github.ref_name }}" `
+            -o squrl-cli.exe `
+            ./cmd/squrl-cli/
+        env:
+          CGO_ENABLED: "1"
+
       - name: Package
         run: Compress-Archive -Path squrl.exe -DestinationPath squrl-${{ github.ref_name }}-windows-amd64.zip
+
+      - name: Package CLI
+        run: Compress-Archive -Path squrl-cli.exe -DestinationPath squrl-cli-${{ github.ref_name }}-windows-amd64.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-amd64
           path: squrl-${{ github.ref_name }}-windows-amd64.zip
+
+      - name: Upload CLI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-amd64-cli
+          path: squrl-cli-${{ github.ref_name }}-windows-amd64.zip
 
   release:
     name: Publish GitHub Release

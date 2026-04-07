@@ -14,6 +14,11 @@ description = "Build the binary to bin/squrl. Extra args are forwarded to go bui
 depends = ["check-deps"]
 run = "go build -ldflags \"-X main.version=dev\" -o bin/squrl ./cmd/squrl/ $@"
 
+[tasks.build-cli]
+description = "Build the CLI binary to bin/squrl-cli. Extra args are forwarded to go build."
+depends = ["check-deps"]
+run = "go build -ldflags \"-X main.version=dev\" -o bin/squrl-cli ./cmd/squrl-cli/ $@"
+
 [tasks.build-debug]
 description = "Build the binary with debug symbols (no optimisations) to bin/squrl — Linux debug attach target"
 depends = ["check-deps"]
@@ -34,6 +39,12 @@ description = "Run the app directly (development). Extra args are forwarded to g
 depends = ["check-deps"]
 env = { "SQURL_DEBUG" = "1" }
 run = "go run ./cmd/squrl/ $@"
+
+[tasks.start-cli]
+description = "Run the CLI directly without building (SQURL_DEBUG=1). Extra args forwarded to go run."
+depends = ["check-deps"]
+env = { SQURL_DEBUG = "1" }
+run = "go run ./cmd/squrl-cli/ $@"
 
 [tasks.start-macos]
 description = "Run the app on macOS (development) — builds a dev .app bundle so the menu bar icon appears"
