@@ -37,11 +37,18 @@ type keyMap struct {
 	Copy  key.Binding
 	Clear key.Binding
 	Quit  key.Binding
+	Help  key.Binding
 }
 
-func (k keyMap) ShortHelp() []key.Binding { return []key.Binding{k.Scan, k.Copy, k.Clear, k.Quit} }
+func (k keyMap) ShortHelp() []key.Binding {
+	return []key.Binding{k.Scan, k.Copy, k.Clear, k.Quit, k.Help}
+}
 func (k keyMap) FullHelp() [][]key.Binding {
-	return [][]key.Binding{{k.Scan, k.Copy, k.Clear, k.Quit}}
+	return [][]key.Binding{
+		{k.Scan, k.Copy},
+		{k.Clear, k.Quit},
+		{k.Help},
+	}
 }
 
 var defaultKeys = keyMap{
@@ -49,6 +56,7 @@ var defaultKeys = keyMap{
 	Copy:  key.NewBinding(key.WithKeys("enter", "l"), key.WithHelp("enter/l", "copy")),
 	Clear: key.NewBinding(key.WithKeys("h", "c"), key.WithHelp("h/c", "back")),
 	Quit:  key.NewBinding(key.WithKeys("q", "ctrl+c"), key.WithHelp("q", "quit")),
+	Help:  key.NewBinding(key.WithKeys("?"), key.WithHelp("?", "toggle help")),
 }
 
 type resultItem struct{ value string }
@@ -122,6 +130,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyPressMsg:
 		switch msg.String() {
+		case "?":
+			m.help.ShowAll = !m.help.ShowAll
+			return m, nil
 		case "q", "ctrl+c":
 			return m, tea.Quit
 		case "h", "c":
