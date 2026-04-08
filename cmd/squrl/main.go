@@ -37,5 +37,5 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	os.Exit(cli.Scan(ctx, opts))
+	os.Exit(cli.RunTUI(ctx, opts))
 }
