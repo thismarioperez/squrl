@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"charm.land/bubbles/v2/list"
 	"charm.land/bubbles/v2/timer"
 	tea "charm.land/bubbletea/v2"
+	"github.com/atotto/clipboard"
 	"github.com/thismarioperez/squrl/assets"
 	"github.com/thismarioperez/squrl/internal/scanner"
 )
@@ -32,18 +34,20 @@ type scanResultMsg struct {
 
 type keyMap struct {
 	Scan  key.Binding
+	Copy  key.Binding
 	Clear key.Binding
 	Quit  key.Binding
 }
 
-func (k keyMap) ShortHelp() []key.Binding { return []key.Binding{k.Scan, k.Clear, k.Quit} }
+func (k keyMap) ShortHelp() []key.Binding { return []key.Binding{k.Scan, k.Copy, k.Clear, k.Quit} }
 func (k keyMap) FullHelp() [][]key.Binding {
-	return [][]key.Binding{{k.Scan, k.Clear, k.Quit}}
+	return [][]key.Binding{{k.Scan, k.Copy, k.Clear, k.Quit}}
 }
 
 var defaultKeys = keyMap{
 	Scan:  key.NewBinding(key.WithKeys("space", "r"), key.WithHelp("space/r", "scan")),
-	Clear: key.NewBinding(key.WithKeys("c"), key.WithHelp("c", "clear")),
+	Copy:  key.NewBinding(key.WithKeys("enter", "l"), key.WithHelp("enter/l", "copy")),
+	Clear: key.NewBinding(key.WithKeys("h", "c"), key.WithHelp("h/c", "back")),
 	Quit:  key.NewBinding(key.WithKeys("q", "ctrl+c"), key.WithHelp("q", "quit")),
 }
 
@@ -120,7 +124,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
-		case "c":
+		case "h", "c":
 			m.state = stateIdle
 			m.err = nil
 			m.list.SetItems(nil)
@@ -131,6 +135,20 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.list.SetItems(nil)
 				return m, m.startScanSequence()
 			}
+		case "enter", "l":
+			if m.state == stateResults {
+				if item, ok := m.list.SelectedItem().(resultItem); ok {
+					if err := clipboard.WriteAll(item.value); err != nil {
+						slog.Error("clipboard write failed", "err", err)
+					}
+				}
+				return m, nil
+			}
+		}
+		if m.state == stateResults {
+			var cmd tea.Cmd
+			m.list, cmd = m.list.Update(msg)
+			return m, cmd
 		}
 
 	case timer.TickMsg:
