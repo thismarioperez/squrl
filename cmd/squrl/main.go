@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	xterm "github.com/charmbracelet/x/term"
 	"github.com/thismarioperez/squrl/internal/cli"
 	"github.com/thismarioperez/squrl/internal/logging"
 )
@@ -37,5 +38,13 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	os.Exit(cli.Scan(ctx, opts))
+	if opts.NonInteractive || !isTerminal(os.Stdout) {
+		os.Exit(cli.RunNonInteractive(ctx, opts))
+	} else {
+		os.Exit(cli.RunTUI(ctx, opts, version))
+	}
+}
+
+func isTerminal(f *os.File) bool {
+	return xterm.IsTerminal(f.Fd())
 }
