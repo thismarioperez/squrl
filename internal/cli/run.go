@@ -10,8 +10,8 @@ import (
 
 // RunTUI starts the Bubble Tea program and blocks until the user quits.
 // Returns 0 if the last scan found QR codes, 1 if none found, 2 on error or cancellation.
-func RunTUI(ctx context.Context, opts ScanOptions) int {
-	m := initialModel(ctx, opts)
+func RunTUI(ctx context.Context, opts ScanOptions, version string) int {
+	m := initialModel(ctx, opts, version)
 	p := tea.NewProgram(m)
 	finalModel, err := p.Run()
 	if err != nil {

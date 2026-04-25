@@ -28,6 +28,10 @@ const (
 	stateResults
 )
 
+// listHeightOffset accounts for the top newline, separator line,
+// blank line after separator, blank line after content, and bottom padding.
+const listHeightOffset = 5
+
 type scanResultMsg struct {
 	results []string
 	err     error
@@ -69,24 +73,25 @@ func (r resultItem) Description() string { return "" }
 func (r resultItem) FilterValue() string { return r.value }
 
 type model struct {
-	opts        ScanOptions
-	state       appState
-	timer       timer.Model
-	list        list.Model
-	help        help.Model
-	keys        keyMap
-	err         error
-	exitCode    int
-	ctx         context.Context
-	banner      string
-	bannerLines int
-	bannerWidth int
-	helpWidth   int
-	width       int
-	height      int
+	opts           ScanOptions
+	version        string
+	state          appState
+	timer          timer.Model
+	list           list.Model
+	help           help.Model
+	keys           keyMap
+	err            error
+	exitCode       int
+	ctx            context.Context
+	renderedBanner string
+	bannerLines    int
+	bannerWidth    int
+	helpWidth      int
+	width          int
+	height         int
 }
 
-func initialModel(ctx context.Context, opts ScanOptions) model {
+func initialModel(ctx context.Context, opts ScanOptions, version string) model {
 	banner := string(assets.CLIIcon())
 	banner = strings.ReplaceAll(banner, "\x1b[?25l", "")
 	banner = strings.ReplaceAll(banner, "\x1b[?25h", "")
@@ -102,15 +107,16 @@ func initialModel(ctx context.Context, opts ScanOptions) model {
 
 	renderedBanner := contentStyle.Render(banner)
 	m := model{
-		opts:        opts,
-		state:       stateIdle,
-		ctx:         ctx,
-		banner:      banner,
-		bannerLines: strings.Count(banner, "\n") + 1,
-		bannerWidth: lipgloss.Width(renderedBanner),
-		list:        l,
-		help:        help.New(),
-		keys:        defaultKeys,
+		opts:           opts,
+		version:        version,
+		state:          stateIdle,
+		ctx:            ctx,
+		renderedBanner: renderedBanner,
+		bannerLines:    strings.Count(banner, "\n") + 1,
+		bannerWidth:    lipgloss.Width(renderedBanner),
+		list:           l,
+		help:           help.New(),
+		keys:           defaultKeys,
 	}
 	if opts.Delay == 0 {
 		m.state = stateScanning
@@ -132,7 +138,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width, m.height = msg.Width, msg.Height
-		listHeight := max(3, msg.Height-m.bannerLines-5)
+		listHeight := max(3, msg.Height-m.bannerLines-listHeightOffset)
 		m.list.SetSize(msg.Width, listHeight)
 		m.helpWidth = max(0, msg.Width-m.bannerWidth)
 		m.help.SetWidth(m.helpWidth)
@@ -153,7 +159,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.state == stateIdle || m.state == stateResults {
 				m.err = nil
 				m.list.SetItems(nil)
-				return m, m.startScanSequence()
+				if m.opts.Delay == 0 {
+					m.state = stateScanning
+					return m, doScan(m.ctx)
+				}
+				m.state = stateCountdown
+				m.timer = timer.New(time.Duration(m.opts.Delay) * time.Second)
+				return m, m.timer.Init()
 			}
 		case "enter", "l":
 			if m.state == stateResults {
@@ -187,8 +199,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		for i, r := range msg.results {
 			items[i] = resultItem{r}
 		}
-		cmd := m.list.SetItems(items)
 		m.list.Title = fmt.Sprintf("%d QR codes found", len(msg.results))
+		cmd := m.list.SetItems(items)
 		if msg.err != nil {
 			m.exitCode = 2
 		} else if len(msg.results) == 0 {
@@ -209,11 +221,11 @@ func (m model) View() tea.View {
 	var b strings.Builder
 	b.WriteString("\n")
 	title := "squrl"
-	version := m.help.Styles.ShortKey.Render("v" + m.opts.Version)
+	version := m.help.Styles.ShortKey.Render("v" + m.version)
 	rightPanel := title + " " + version + "\n\n" + m.help.View(m.keys)
 	header := lipgloss.JoinHorizontal(
 		lipgloss.Top,
-		contentStyle.Render(m.banner),
+		m.renderedBanner,
 		lipgloss.NewStyle().PaddingLeft(2).Render(rightPanel),
 	)
 	b.WriteString(header)
@@ -250,16 +262,6 @@ func (m model) View() tea.View {
 	return v
 }
 
-func (m *model) startScanSequence() tea.Cmd {
-	if m.opts.Delay == 0 {
-		m.state = stateScanning
-		return doScan(m.ctx)
-	}
-	m.state = stateCountdown
-	m.timer = timer.New(time.Duration(m.opts.Delay) * time.Second)
-	return m.timer.Init()
-}
-
 func doScan(ctx context.Context) tea.Cmd {
 	return func() tea.Msg {
 		results, err := scanner.ScanAllScreens(ctx)
@@ -267,6 +269,9 @@ func doScan(ctx context.Context) tea.Cmd {
 	}
 }
 
+// waitForCtx bridges context cancellation into the Bubble Tea event loop.
+// The spawned goroutine blocks until ctx is done; since stop() is deferred
+// in main immediately after p.Run() returns, the window is minimal.
 func waitForCtx(ctx context.Context) tea.Cmd {
 	return func() tea.Msg {
 		<-ctx.Done()
