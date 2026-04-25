@@ -7,12 +7,13 @@ import (
 
 // ScanOptions holds configuration for a CLI scan run.
 type ScanOptions struct {
-	Delay          int  // countdown seconds before scan; 0 = skip countdown
-	NonInteractive bool // skip TUI; print results to stdout one per line
+	Delay          int    // countdown seconds before scan; 0 = skip countdown
+	NonInteractive bool   // skip TUI; print results to stdout one per line
+	Version        string // build-time version string, e.g. "v1.2.3" or "dev"
 }
 
 // ParseScanArgs parses the arguments after "scan" into ScanOptions.
-func ParseScanArgs(args []string) (ScanOptions, error) {
+func ParseScanArgs(args []string, version string) (ScanOptions, error) {
 	fs := flag.NewFlagSet("squrl", flag.ContinueOnError)
 	fs.Usage = func() {
 		fmt.Fprintf(fs.Output(), "Usage of squrl:\n")
@@ -38,5 +39,5 @@ func ParseScanArgs(args []string) (ScanOptions, error) {
 	if *delay < 0 {
 		return ScanOptions{}, fmt.Errorf("--delay must be >= 0")
 	}
-	return ScanOptions{Delay: *delay, NonInteractive: *nonInteractive}, nil
+	return ScanOptions{Delay: *delay, NonInteractive: *nonInteractive, Version: version}, nil
 }

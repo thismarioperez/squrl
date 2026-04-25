@@ -25,7 +25,7 @@ func main() {
 	cleanup := logging.Init()
 	defer cleanup()
 
-	opts, err := cli.ParseScanArgs(os.Args[1:])
+	opts, err := cli.ParseScanArgs(os.Args[1:], version)
 	if err != nil {
 		if errors.Is(err, flag.ErrHelp) {
 			os.Exit(0)

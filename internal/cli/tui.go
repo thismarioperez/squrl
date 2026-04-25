@@ -42,7 +42,7 @@ type keyMap struct {
 }
 
 func (k keyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Scan, k.Copy, k.Clear, k.Quit, k.Help}
+	return []key.Binding{k.Help}
 }
 func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
@@ -80,6 +80,8 @@ type model struct {
 	ctx         context.Context
 	banner      string
 	bannerLines int
+	bannerWidth int
+	helpWidth   int
 	width       int
 	height      int
 }
@@ -88,6 +90,7 @@ func initialModel(ctx context.Context, opts ScanOptions) model {
 	banner := string(assets.CLIIcon())
 	banner = strings.ReplaceAll(banner, "\x1b[?25l", "")
 	banner = strings.ReplaceAll(banner, "\x1b[?25h", "")
+	banner = strings.TrimRight(banner, "\n")
 
 	delegate := list.NewDefaultDelegate()
 	delegate.ShowDescription = false
@@ -97,12 +100,14 @@ func initialModel(ctx context.Context, opts ScanOptions) model {
 	l.SetShowStatusBar(false)
 	l.SetStatusBarItemName("QR code", "QR codes")
 
+	renderedBanner := contentStyle.Render(banner)
 	m := model{
 		opts:        opts,
 		state:       stateIdle,
 		ctx:         ctx,
 		banner:      banner,
 		bannerLines: strings.Count(banner, "\n") + 1,
+		bannerWidth: lipgloss.Width(renderedBanner),
 		list:        l,
 		help:        help.New(),
 		keys:        defaultKeys,
@@ -129,7 +134,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width, m.height = msg.Width, msg.Height
 		listHeight := max(3, msg.Height-m.bannerLines-5)
 		m.list.SetSize(msg.Width, listHeight)
-		m.help.SetWidth(msg.Width)
+		m.helpWidth = max(0, msg.Width-m.bannerWidth)
+		m.help.SetWidth(m.helpWidth)
 
 	case tea.KeyPressMsg:
 		switch msg.String() {
@@ -201,9 +207,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() tea.View {
 	var b strings.Builder
-	b.WriteString(contentStyle.Render(m.banner))
-	b.WriteString(m.help.View(m.keys))
 	b.WriteString("\n")
+	title := "squrl"
+	version := m.help.Styles.ShortKey.Render("version " + m.opts.Version)
+	rightPanel := title + "\n" + version + "\n\n" + m.help.View(m.keys)
+	header := lipgloss.JoinHorizontal(
+		lipgloss.Top,
+		contentStyle.Render(m.banner),
+		lipgloss.NewStyle().PaddingLeft(2).Render(rightPanel),
+	)
+	b.WriteString(header)
+	b.WriteString("\n")
+	ruleStyle := lipgloss.NewStyle().PaddingLeft(2).PaddingRight(2)
+	b.WriteString(ruleStyle.Render(strings.Repeat("─", max(0, m.width-4))) + "\n")
 	b.WriteString("\n")
 
 	switch m.state {
