@@ -81,7 +81,7 @@ var contentStyle = lipgloss.NewStyle().PaddingLeft(2)
 var defaultKeys = keyMap{
 	Scan:  key.NewBinding(key.WithKeys("space", "r"), key.WithHelp("space/r", "scan")),
 	Clear: key.NewBinding(key.WithKeys("esc", "c"), key.WithHelp("esc/c", "clear")),
-	Quit:  key.NewBinding(key.WithKeys("ctrl+c","q"), key.WithHelp("ctrl+c/q", "quit")),
+	Quit:  key.NewBinding(key.WithKeys("ctrl+c", "q"), key.WithHelp("ctrl+c/q", "quit")),
 	Help:  key.NewBinding(key.WithKeys("?"), key.WithHelp("?", "toggle help")),
 }
 
@@ -253,7 +253,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case timer.TimeoutMsg:
 		m.state = stateScanning
-		return m, doScan(m.ctx)
+		return m, tea.Batch(doScan(m.ctx), m.spinner.Tick)
 
 	case scanResultMsg:
 		m.state = stateResults
@@ -306,9 +306,10 @@ func (m model) View() tea.View {
 		b.WriteString(contentStyle.Render(m.spinner.View()+" Scanning...") + "\n")
 	case stateCopied:
 		truncated := m.copiedValue
+		runes := []rune(truncated)
 		maxLen := max(0, m.width-20)
-		if len(truncated) > maxLen {
-			truncated = truncated[:maxLen] + "…"
+		if len(runes) > maxLen {
+			truncated = string(runes[:maxLen]) + "…"
 		}
 		b.WriteString(contentStyle.Render(
 			lipgloss.NewStyle().
