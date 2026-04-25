@@ -11,6 +11,7 @@ import (
 	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/list"
+	"charm.land/bubbles/v2/spinner"
 	"charm.land/bubbles/v2/timer"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
@@ -76,6 +77,7 @@ type model struct {
 	opts           ScanOptions
 	version        string
 	state          appState
+	spinner        spinner.Model
 	timer          timer.Model
 	list           list.Model
 	help           help.Model
@@ -105,11 +107,16 @@ func initialModel(ctx context.Context, opts ScanOptions, version string) model {
 	l.SetShowStatusBar(false)
 	l.SetStatusBarItemName("QR code", "QR codes")
 
+	sp := spinner.New()
+	sp.Spinner = spinner.Dot
+	sp.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#c96b3a"))
+
 	renderedBanner := contentStyle.Render(banner)
 	m := model{
 		opts:           opts,
 		version:        version,
 		state:          stateIdle,
+		spinner:        sp,
 		ctx:            ctx,
 		renderedBanner: renderedBanner,
 		bannerLines:    strings.Count(banner, "\n") + 1,
@@ -129,9 +136,9 @@ func initialModel(ctx context.Context, opts ScanOptions, version string) model {
 
 func (m model) Init() tea.Cmd {
 	if m.state == stateScanning {
-		return tea.Batch(doScan(m.ctx), waitForCtx(m.ctx))
+		return tea.Batch(doScan(m.ctx), waitForCtx(m.ctx), m.spinner.Tick)
 	}
-	return tea.Batch(m.timer.Init(), waitForCtx(m.ctx))
+	return tea.Batch(m.timer.Init(), waitForCtx(m.ctx), m.spinner.Tick)
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -161,11 +168,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.list.SetItems(nil)
 				if m.opts.Delay == 0 {
 					m.state = stateScanning
-					return m, doScan(m.ctx)
+					return m, tea.Batch(doScan(m.ctx), m.spinner.Tick)
 				}
 				m.state = stateCountdown
 				m.timer = timer.New(time.Duration(m.opts.Delay) * time.Second)
-				return m, m.timer.Init()
+				return m, tea.Batch(m.timer.Init(), m.spinner.Tick)
 			}
 		case "enter", "l":
 			if m.state == stateResults {
@@ -182,6 +189,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.list, cmd = m.list.Update(msg)
 			return m, cmd
 		}
+
+	case spinner.TickMsg:
+		var cmd tea.Cmd
+		m.spinner, cmd = m.spinner.Update(msg)
+		return m, cmd
 
 	case timer.TickMsg:
 		var cmd tea.Cmd
@@ -238,9 +250,9 @@ func (m model) View() tea.View {
 	case stateIdle:
 		b.WriteString(contentStyle.Render("Ready to scan.") + "\n")
 	case stateCountdown:
-		b.WriteString(contentStyle.Render(fmt.Sprintf("Scanning in %s...", m.timer.View())) + "\n")
+		b.WriteString(contentStyle.Render(m.spinner.View()+" Scanning in "+m.timer.View()+"...") + "\n")
 	case stateScanning:
-		b.WriteString(contentStyle.Render("Scanning...") + "\n")
+		b.WriteString(contentStyle.Render(m.spinner.View()+" Scanning...") + "\n")
 	case stateResults:
 		if m.err != nil {
 			if errors.Is(m.err, context.Canceled) {
