@@ -13,6 +13,7 @@ import (
 	"charm.land/bubbles/v2/list"
 	"charm.land/bubbles/v2/timer"
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/atotto/clipboard"
 	"github.com/thismarioperez/squrl/assets"
 	"github.com/thismarioperez/squrl/internal/scanner"
@@ -50,6 +51,8 @@ func (k keyMap) FullHelp() [][]key.Binding {
 		{k.Help},
 	}
 }
+
+var contentStyle = lipgloss.NewStyle().PaddingLeft(2)
 
 var defaultKeys = keyMap{
 	Scan:  key.NewBinding(key.WithKeys("space", "r"), key.WithHelp("space/r", "scan")),
@@ -198,27 +201,29 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() tea.View {
 	var b strings.Builder
-	b.WriteString(m.banner)
+	b.WriteString(contentStyle.Render(m.banner))
 	b.WriteString(m.help.View(m.keys))
 	b.WriteString("\n")
 	b.WriteString("\n")
 
 	switch m.state {
 	case stateIdle:
-		b.WriteString("Ready to scan.\n")
+		b.WriteString(contentStyle.Render("Ready to scan.") + "\n")
 	case stateCountdown:
-		fmt.Fprintf(&b, "Scanning in %s...\n", m.timer.View())
+		b.WriteString(contentStyle.Render(fmt.Sprintf("Scanning in %s...", m.timer.View())) + "\n")
 	case stateScanning:
-		b.WriteString("Scanning...\n")
+		b.WriteString(contentStyle.Render("Scanning...") + "\n")
 	case stateResults:
 		if m.err != nil {
 			if errors.Is(m.err, context.Canceled) {
-				b.WriteString("Cancelled.\n")
+				b.WriteString(contentStyle.Render("Cancelled.") + "\n")
 			} else {
-				b.WriteString("Error: " + m.err.Error() + "\n")
+				b.WriteString(contentStyle.Render("Error: "+m.err.Error()) + "\n")
 			}
+		} else if len(m.list.Items()) == 0 {
+			b.WriteString(contentStyle.Render("No QR codes found.") + "\n")
 		} else {
-			b.WriteString(m.list.View())
+			b.WriteString(contentStyle.Render(m.list.View()))
 			b.WriteString("\n")
 		}
 	}
