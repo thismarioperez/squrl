@@ -284,7 +284,7 @@ func (m model) View() tea.View {
 	var b strings.Builder
 	b.WriteString("\n")
 	title := "squrl"
-	version := m.help.Styles.ShortKey.Render("v" + m.version)
+	version := m.help.Styles.ShortKey.Render(m.version)
 	rightPanel := title + " " + version + "\n\n" + m.help.View(m.keys)
 	header := lipgloss.JoinHorizontal(
 		lipgloss.Top,
