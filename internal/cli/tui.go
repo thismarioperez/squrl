@@ -27,6 +27,7 @@ const (
 	stateCountdown
 	stateScanning
 	stateResults
+	stateCopied
 )
 
 // listHeightOffset accounts for the top newline, separator line,
@@ -37,6 +38,8 @@ type scanResultMsg struct {
 	results []string
 	err     error
 }
+
+type copiedDismissMsg struct{}
 
 type keyMap struct {
 	Scan  key.Binding
@@ -109,6 +112,7 @@ type model struct {
 	listKeys       listKeyMap
 	err            error
 	exitCode       int
+	copiedValue    string
 	ctx            context.Context
 	renderedBanner string
 	bannerLines    int
@@ -178,7 +182,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.help.SetWidth(m.helpWidth)
 		m.listHelp.SetWidth(msg.Width)
 
+	case copiedDismissMsg:
+		if m.state == stateCopied {
+			m.state = stateResults
+		}
+		return m, nil
+
 	case tea.KeyPressMsg:
+		if m.state == stateCopied {
+			switch msg.String() {
+			case "ctrl+c", "q":
+				return m, tea.Quit
+			default:
+				m.state = stateResults
+				return m, nil
+			}
+		}
 		switch msg.String() {
 		case "?":
 			m.help.ShowAll = !m.help.ShowAll
@@ -207,6 +226,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if item, ok := m.list.SelectedItem().(resultItem); ok {
 					if err := clipboard.WriteAll(item.value); err != nil {
 						slog.Error("clipboard write failed", "err", err)
+					} else {
+						m.copiedValue = item.value
+						m.state = stateCopied
+						return m, scheduleDismiss()
 					}
 				}
 				return m, nil
@@ -281,6 +304,18 @@ func (m model) View() tea.View {
 		b.WriteString(contentStyle.Render(m.spinner.View()+" Scanning in "+m.timer.View()+"...") + "\n")
 	case stateScanning:
 		b.WriteString(contentStyle.Render(m.spinner.View()+" Scanning...") + "\n")
+	case stateCopied:
+		truncated := m.copiedValue
+		maxLen := max(0, m.width-20)
+		if len(truncated) > maxLen {
+			truncated = truncated[:maxLen] + "…"
+		}
+		b.WriteString(contentStyle.Render(
+			lipgloss.NewStyle().
+				Foreground(lipgloss.Color("2")).
+				Bold(true).
+				Render("✓ Copied: "+truncated),
+		) + "\n")
 	case stateResults:
 		if m.err != nil {
 			if errors.Is(m.err, context.Canceled) {
@@ -302,6 +337,12 @@ func (m model) View() tea.View {
 	v := tea.NewView(b.String())
 	v.AltScreen = true
 	return v
+}
+
+func scheduleDismiss() tea.Cmd {
+	return tea.Tick(1500*time.Millisecond, func(time.Time) tea.Msg {
+		return copiedDismissMsg{}
+	})
 }
 
 func doScan(ctx context.Context) tea.Cmd {
