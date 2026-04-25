@@ -37,5 +37,17 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	os.Exit(cli.RunTUI(ctx, opts))
+	if opts.NonInteractive || !isTerminal(os.Stdout) {
+		os.Exit(cli.RunNonInteractive(ctx, opts))
+	} else {
+		os.Exit(cli.RunTUI(ctx, opts))
+	}
+}
+
+func isTerminal(f *os.File) bool {
+	fi, err := f.Stat()
+	if err != nil {
+		return false
+	}
+	return fi.Mode()&os.ModeCharDevice != 0
 }
