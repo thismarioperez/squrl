@@ -199,6 +199,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() tea.View {
 	var b strings.Builder
 	b.WriteString(m.banner)
+	b.WriteString(m.help.View(m.keys))
+	b.WriteString("\n")
 	b.WriteString("\n")
 
 	switch m.state {
@@ -222,7 +224,6 @@ func (m model) View() tea.View {
 	}
 
 	b.WriteString("\n")
-	b.WriteString(m.help.View(m.keys))
 	v := tea.NewView(b.String())
 	v.AltScreen = true
 	return v
