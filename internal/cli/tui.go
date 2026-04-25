@@ -40,7 +40,6 @@ type scanResultMsg struct {
 
 type keyMap struct {
 	Scan  key.Binding
-	Copy  key.Binding
 	Clear key.Binding
 	Quit  key.Binding
 	Help  key.Binding
@@ -51,9 +50,26 @@ func (k keyMap) ShortHelp() []key.Binding {
 }
 func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Scan, k.Copy},
-		{k.Clear, k.Quit},
-		{k.Help},
+		{k.Scan, k.Clear},
+		{k.Quit, k.Help},
+	}
+}
+
+type listKeyMap struct {
+	CursorUp   key.Binding
+	CursorDown key.Binding
+	PrevPage   key.Binding
+	NextPage   key.Binding
+	Copy       key.Binding
+}
+
+func (k listKeyMap) ShortHelp() []key.Binding {
+	return []key.Binding{k.CursorUp, k.CursorDown, k.Copy}
+}
+func (k listKeyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{k.CursorUp, k.CursorDown, k.PrevPage, k.NextPage},
+		{k.Copy},
 	}
 }
 
@@ -61,10 +77,17 @@ var contentStyle = lipgloss.NewStyle().PaddingLeft(2)
 
 var defaultKeys = keyMap{
 	Scan:  key.NewBinding(key.WithKeys("space", "r"), key.WithHelp("space/r", "scan")),
-	Copy:  key.NewBinding(key.WithKeys("enter", "l"), key.WithHelp("enter/l", "copy")),
-	Clear: key.NewBinding(key.WithKeys("h", "c"), key.WithHelp("h/c", "back")),
-	Quit:  key.NewBinding(key.WithKeys("q", "ctrl+c"), key.WithHelp("q", "quit")),
+	Clear: key.NewBinding(key.WithKeys("esc", "c"), key.WithHelp("esc/c", "clear")),
+	Quit:  key.NewBinding(key.WithKeys("ctrl+c","q"), key.WithHelp("ctrl+c/q", "quit")),
 	Help:  key.NewBinding(key.WithKeys("?"), key.WithHelp("?", "toggle help")),
+}
+
+var defaultListKeys = listKeyMap{
+	CursorUp:   key.NewBinding(key.WithKeys("up", "k"), key.WithHelp("↑/k", "up")),
+	CursorDown: key.NewBinding(key.WithKeys("down", "j"), key.WithHelp("↓/j", "down")),
+	PrevPage:   key.NewBinding(key.WithKeys("left", "h", "pgup"), key.WithHelp("←/h/pgup", "prev page")),
+	NextPage:   key.NewBinding(key.WithKeys("right", "l", "pgdown"), key.WithHelp("→/l/pgdn", "next page")),
+	Copy:       key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "copy")),
 }
 
 type resultItem struct{ value string }
@@ -81,7 +104,9 @@ type model struct {
 	timer          timer.Model
 	list           list.Model
 	help           help.Model
+	listHelp       help.Model
 	keys           keyMap
+	listKeys       listKeyMap
 	err            error
 	exitCode       int
 	ctx            context.Context
@@ -123,7 +148,9 @@ func initialModel(ctx context.Context, opts ScanOptions, version string) model {
 		bannerWidth:    lipgloss.Width(renderedBanner),
 		list:           l,
 		help:           help.New(),
+		listHelp:       help.New(),
 		keys:           defaultKeys,
+		listKeys:       defaultListKeys,
 	}
 	if opts.Delay == 0 {
 		m.state = stateScanning
@@ -149,15 +176,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.list.SetSize(msg.Width, listHeight)
 		m.helpWidth = max(0, msg.Width-m.bannerWidth)
 		m.help.SetWidth(m.helpWidth)
+		m.listHelp.SetWidth(msg.Width)
 
 	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "?":
 			m.help.ShowAll = !m.help.ShowAll
 			return m, nil
-		case "q", "ctrl+c":
+		case "ctrl+c", "q":
 			return m, tea.Quit
-		case "h", "c":
+		case "esc", "c":
 			m.state = stateIdle
 			m.err = nil
 			m.list.SetItems(nil)
@@ -174,7 +202,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.timer = timer.New(time.Duration(m.opts.Delay) * time.Second)
 				return m, tea.Batch(m.timer.Init(), m.spinner.Tick)
 			}
-		case "enter", "l":
+		case "enter":
 			if m.state == stateResults {
 				if item, ok := m.list.SelectedItem().(resultItem); ok {
 					if err := clipboard.WriteAll(item.value); err != nil {
@@ -264,6 +292,8 @@ func (m model) View() tea.View {
 			b.WriteString(contentStyle.Render("No QR codes found.") + "\n")
 		} else {
 			b.WriteString(contentStyle.Render(m.list.View()))
+			b.WriteString("\n")
+			b.WriteString(contentStyle.Render(m.listHelp.View(m.listKeys)))
 			b.WriteString("\n")
 		}
 	}
